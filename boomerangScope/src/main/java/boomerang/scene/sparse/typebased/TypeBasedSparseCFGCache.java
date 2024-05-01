@@ -6,6 +6,7 @@ import boomerang.scene.Val;
 import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
+import boomerang.scene.sparse.eval.MainQueryInfo;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +19,8 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
 
   List<SparseCFGQueryLog> logList = new ArrayList<>();
 
-  Map<String, SparseAliasingCFG> cache;
+  Map<String, Map<String, SparseAliasingCFG>> cache;
+  // Map<String, SparseAliasingCFG> cache;
   TypeBasedSparseCFGBuilder sparseCFGBuilder;
 
   private static TypeBasedSparseCFGCache INSTANCE;
@@ -38,20 +40,30 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
   }
 
   public SparseAliasingCFG getSparseCFGForForwardPropagation(SootMethod m, Stmt stmt, Val val) {
-    for (String s : cache.keySet()) {
-      if (s.startsWith(m.getSignature())) {
-        SparseAliasingCFG sparseAliasingCFG = cache.get(s);
-        if (sparseAliasingCFG.getGraph().nodes().contains(stmt)) {
+    String methodSign = m.getSignature();
+    Map<String, SparseAliasingCFG> scfgMap = new HashMap<>();
+    if (cache.containsKey(methodSign)) {
+      scfgMap = cache.get(methodSign);
+      String type = MainQueryInfo.getInstance().getVal().getType().toString();
+      if (scfgMap.containsKey(type)) {
+        if (scfgMap.get(type).getGraph().nodes().contains(stmt)) {
           SparseCFGQueryLog queryLog =
               new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
           logList.add(queryLog);
-          return sparseAliasingCFG;
+          return scfgMap.get(type);
         }
+      }
+    }
+    for (SparseAliasingCFG scfg : scfgMap.values()) {
+      if (scfg.getGraph().nodes().contains(stmt)) {
+        SparseCFGQueryLog queryLog =
+            new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
+        logList.add(queryLog);
+        return scfg;
       }
     }
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
-    // throw new RuntimeException("CFG not found for:" + m + " s:" + stmt);
     return null;
   }
 
@@ -68,51 +80,53 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     //    Value sootInitialQueryVal = SootAdapter.asValue(initialQueryVal);
     //    Value sootCurrentQueryVal = SootAdapter.asValue(currentVal);
 
-    String key =
-        new StringBuilder(sootSurrentMethod.getSignature())
-            .append("-")
-            .append(initialQueryVal)
-            .append("-")
-            .append(sootInitialQueryStmt)
-            .toString();
+    String key = sootSurrentMethod.getSignature();
+    String type = initialQueryVal.getType().toString();
 
     // currentStmt must be part of the sparseCFG that was built for the initialQueryStmt
     // if not we'll built another sparseCFG for the currentStmt
     if (cache.containsKey(key)) {
-      if (cache.get(key).getGraph().nodes().contains(sootCurrentStmt)) {
-        SparseCFGQueryLog queryLog =
-            new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
-        logList.add(queryLog);
-        return cache.get(key);
+      Map<String, SparseAliasingCFG> scfgMap = cache.get(key);
+      if (scfgMap.containsKey(type)) {
+        SparseAliasingCFG scfg = scfgMap.get(type);
+        if (scfg.getGraph().nodes().contains(sootCurrentStmt)) {
+          SparseCFGQueryLog queryLog =
+              new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
+          logList.add(queryLog);
+          return scfg;
+        } else {
+          return createNewSCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
+        }
       } else {
-        SparseCFGQueryLog queryLog =
-            new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-        queryLog.logStart();
-        SparseAliasingCFG cfg =
-            sparseCFGBuilder.buildSparseCFG(
-                initialQueryVal, sootSurrentMethod, sootCurrentStmt, queryLog);
-        queryLog.logEnd();
-        cache.put(key + currentStmt, cfg);
-        logList.add(queryLog);
-        return cfg;
+        return createNewSCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
       }
-    } else if (cache.containsKey(key + currentStmt)) {
-      SparseCFGQueryLog queryLog =
-          new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
-      logList.add(queryLog);
-      return cache.get(key + currentStmt);
     } else {
-      SparseCFGQueryLog queryLog =
-          new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-      queryLog.logStart();
-      SparseAliasingCFG cfg =
-          sparseCFGBuilder.buildSparseCFG(
-              initialQueryVal, sootSurrentMethod, sootCurrentStmt, queryLog);
-      queryLog.logEnd();
-      cache.put(key, cfg);
-      logList.add(queryLog);
-      return cfg;
+      return createNewSCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
     }
+  }
+
+  public SparseAliasingCFG createNewSCFG(
+      Val initialQueryVal, SootMethod sootSurrentMethod, Stmt sootCurrentStmt, String type) {
+    SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
+    queryLog.logStart();
+    SparseAliasingCFG scfg =
+        sparseCFGBuilder.buildSparseCFG(
+            initialQueryVal, sootSurrentMethod, sootCurrentStmt, queryLog);
+    queryLog.logEnd();
+    logList.add(queryLog);
+    put(sootSurrentMethod.getSignature(), type, scfg);
+    return scfg;
+  }
+
+  public void put(String methodSignature, String type, SparseAliasingCFG scfg) {
+    Map<String, SparseAliasingCFG> scfgMap;
+    if (cache.containsKey(methodSignature)) {
+      scfgMap = cache.get(methodSignature);
+    } else {
+      scfgMap = new HashMap<>();
+      cache.put(methodSignature, scfgMap);
+    }
+    scfgMap.put(type, scfg);
   }
 
   @Override
