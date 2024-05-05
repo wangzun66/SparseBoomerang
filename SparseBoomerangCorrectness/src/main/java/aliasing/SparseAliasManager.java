@@ -3,10 +3,13 @@ package aliasing;
 import boomerang.BackwardQuery;
 import boomerang.Boomerang;
 import boomerang.DefaultBoomerangOptions;
+import boomerang.Query;
 import boomerang.results.BackwardBoomerangResults;
 import boomerang.scene.*;
 import boomerang.scene.jimple.*;
 import boomerang.scene.sparse.SparseCFGCache;
+import boomerang.scene.sparse.eval.MainQueryInfo;
+import boomerang.solver.BackwardBoomerangSolver;
 import boomerang.util.AccessPath;
 import com.google.common.base.Stopwatch;
 import com.google.common.cache.CacheBuilder;
@@ -15,6 +18,8 @@ import com.google.common.cache.LoadingCache;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.*;
@@ -136,6 +141,22 @@ public class SparseAliasManager {
                                   INSTANCE.sparsificationStrategy, INSTANCE.ignoreAfterQuery));
                       BackwardBoomerangResults<Weight.NoWeight> results =
                           boomerangSolver.solve(query);
+                      System.out.println(query.getInfo());
+                      for (Query fwq : boomerangSolver.getSolvers().keySet()) {
+                        System.out.print(fwq.getInfo() + " -- ");
+                        System.out.println(boomerangSolver.getSolvers().get(fwq).toString());
+                      }
+                      for (BackwardBoomerangSolver solver :
+                          boomerangSolver.getBackwardSolvers().values()) {
+                        System.out.println(solver.toString());
+                      }
+                      for (BackwardBoomerangSolver solver :
+                              boomerangSolver.getBackwardSolvers().values().stream().collect(Collectors.toSet())) {
+                        System.out.println(solver.toString());
+                      }
+                      for (BackwardQuery bwq : boomerangSolver.getBackwardSolvers().keySet()) {
+                        System.out.println(bwq.getInfo());
+                      }
                       aliases = results.getAllAliases();
                       boolean debug = false;
                       if (debug) {
@@ -165,6 +186,8 @@ public class SparseAliasManager {
     }
     Stopwatch stopwatch = Stopwatch.createStarted();
     BackwardQuery query = createQuery(stmt, method, value);
+    MainQueryInfo.getInstance()
+        .setInfo(query.cfgEdge().getMethod(), query.cfgEdge().getStart(), query.var());
     Set<AccessPath> aliases = getAliases(query);
     Duration elapsed = stopwatch.elapsed();
     totalAliasingDuration = totalAliasingDuration.plus(elapsed);
