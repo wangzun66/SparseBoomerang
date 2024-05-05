@@ -11,6 +11,7 @@ import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.scene.sparse.eval.PropagationCounter;
 import java.util.*;
+import boomerang.solver.TASCFGSolverCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.SootMethod;
@@ -26,6 +27,9 @@ public class StaticCFG implements ObservableControlFlowGraph {
   private BoomerangOptions options;
 
   private Val currentVal;
+
+  private SparseAliasingCFG currentSCFG = null;
+  private String currMethodSig = "";
 
   public void setCurrentVal(Val val) {
     this.currentVal = val;
@@ -49,7 +53,24 @@ public class StaticCFG implements ObservableControlFlowGraph {
     Statement curr = l.getCurr();
     if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
       LOGGER.info("Take SCFG for {}", method.toString());
-      SparseAliasingCFG sparseCFG = getSparseCFG(method, curr, currentVal);
+      SparseAliasingCFG sparseCFG = null;
+      String methodSig = SootAdapter.asSootMethod(method).getSignature();
+      if(methodSig.equals(currMethodSig)){
+        sparseCFG = currentSCFG;
+        LOGGER.info("Retrieved in ForwardBoomerangSolver");
+      }else{
+        if(sparsificationStrategy == SparseCFGCache.SparsificationStrategy.TYPE_BASED){
+          sparseCFG = TASCFGSolverCache.getInstance().get(methodSig);
+        } else if(sparsificationStrategy == SparseCFGCache.SparsificationStrategy.ALIAS_AWARE){
+          //todo: add for AAS
+        }
+        if(sparseCFG == null){
+          sparseCFG = getSparseCFG(method, curr, currentVal);
+        }
+        this.currMethodSig = methodSig;
+        this.currentSCFG = sparseCFG;
+      }
+      LOGGER.info("CurrentMethod: {} -- CurrentSCFG: {}", currMethodSig , currentSCFG.toString());
       if (sparseCFG != null) {
         propagateSparse(l, method, curr, sparseCFG);
       } else if (options.handleSpecialInvokeAsNormalPropagation()) {

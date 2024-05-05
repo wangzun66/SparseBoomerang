@@ -61,6 +61,8 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
   private static final Logger LOGGER = LoggerFactory.getLogger(BackwardBoomerangSolver.class);
   private final BackwardQuery query;
   private final IBackwardFlowFunction flowFunction;
+  private SparseAliasingCFG currentSCFG = null;
+  private String currMethodSig = "";
 
   public BackwardBoomerangSolver(
       ObservableICFG<Statement, Method> icfg,
@@ -82,6 +84,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     this.query = query;
     this.flowFunction = backwardFlowFunction;
     this.flowFunction.setSolver(this, fieldLoadStatements, fieldStoreStatements);
+    TASCFGSolverCache.getInstance().reset();
   }
 
   private boolean notUsedInMethod(Method m, Statement curr, Val value) {
@@ -206,8 +209,30 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
 
   private void propagateSparse(Method method, Node<Edge, Val> currNode, Edge curr, Val value) {
     Statement propStmt = curr.getStart();
+    //take sparseCFG for the method in local, if there's no corresponding scfg
+    //take scfg for the method from SFCGSolverCache , if there's no corresponding scfg in solver-cache
+    //take or create scfg for the method from SFCGSolverCache for whole apk and update in solver-cache
+    //don't forget update scfg and methodsig in local
     LOGGER.info("Take SCFG for {}", method.toString());
-    SparseAliasingCFG sparseCFG = getSparseCFG(query, method, value, propStmt);
+    SparseAliasingCFG sparseCFG = null;
+    String methodSig = SootAdapter.asSootMethod(method).getSignature();
+    if(methodSig.equals(currMethodSig)){
+      sparseCFG = currentSCFG;
+      LOGGER.info("Retrieved in BackwardBoomerangSolver");
+    }else{
+      if(options.getSparsificationStrategy() == SparseCFGCache.SparsificationStrategy.TYPE_BASED){
+        sparseCFG = TASCFGSolverCache.getInstance().get(methodSig);
+      } else if(options.getSparsificationStrategy() == SparseCFGCache.SparsificationStrategy.ALIAS_AWARE){
+        //todo: add for AAS
+      }
+      if(sparseCFG == null){
+        sparseCFG = getSparseCFG(query, method, value, propStmt);
+        TASCFGSolverCache.getInstance().put(methodSig, sparseCFG);
+      }
+      this.currMethodSig = methodSig;
+      this.currentSCFG = sparseCFG;
+    }
+    LOGGER.info("CurrentMethod: {} -- CurrentSCFG: {}", currMethodSig, currentSCFG.toString());
     Stmt stmt = SootAdapter.asStmt(propStmt);
     if (sparseCFG.getGraph().nodes().contains(stmt)) {
       Set<Unit> predecessors = sparseCFG.getGraph().predecessors(stmt);
@@ -221,7 +246,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
         }
       }
     } else {
-      System.out.println("node not in cfg:" + stmt);
+      LOGGER.info("node not in cfg: {} ", stmt.toString());
     }
   }
 

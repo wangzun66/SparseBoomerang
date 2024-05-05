@@ -141,21 +141,18 @@ public class SparseAliasManager {
                                   INSTANCE.sparsificationStrategy, INSTANCE.ignoreAfterQuery));
                       BackwardBoomerangResults<Weight.NoWeight> results =
                           boomerangSolver.solve(query);
+
                       System.out.println(query.getInfo());
                       for (Query fwq : boomerangSolver.getSolvers().keySet()) {
                         System.out.print(fwq.getInfo() + " -- ");
                         System.out.println(boomerangSolver.getSolvers().get(fwq).toString());
                       }
-                      for (BackwardBoomerangSolver solver :
-                          boomerangSolver.getBackwardSolvers().values()) {
-                        System.out.println(solver.toString());
+                      for (BackwardQuery bwq : boomerangSolver.getBackwardSolvers().keySet()) {
+                        System.out.println(bwq.getInfo());
                       }
                       for (BackwardBoomerangSolver solver :
                               boomerangSolver.getBackwardSolvers().values().stream().collect(Collectors.toSet())) {
                         System.out.println(solver.toString());
-                      }
-                      for (BackwardQuery bwq : boomerangSolver.getBackwardSolvers().keySet()) {
-                        System.out.println(bwq.getInfo());
                       }
                       aliases = results.getAllAliases();
                       boolean debug = false;

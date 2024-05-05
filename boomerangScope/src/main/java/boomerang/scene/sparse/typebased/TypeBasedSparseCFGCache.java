@@ -50,7 +50,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       if (scfgMap.containsKey(type)) {
         SparseAliasingCFG scfg = scfgMap.get(type);
         if (scfg.getGraph().nodes().contains(stmt)) {
-          LOGGER.info("FW Retrieve SCFG for {}", m);
+          LOGGER.info("FW Retrieved SCFG for {} from TypeBasedSparseCFGCache", m);
           SparseCFGQueryLog queryLog =
               new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
           logList.add(queryLog);
@@ -60,14 +60,14 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     }
     for (SparseAliasingCFG scfg : scfgMap.values()) {
       if (scfg.getGraph().nodes().contains(stmt)) {
-        LOGGER.info("FW Retrieve SCFG for {}", m);
+        LOGGER.info("FW Retrieved SCFG for {} from TypeBasedSparseCFGCache", m);
         SparseCFGQueryLog queryLog =
             new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
         logList.add(queryLog);
         return scfg;
       }
     }
-    LOGGER.info("Original CFG for {}", m);
+    LOGGER.info("Original CFG for {} from TypeBasedSparseCFGCache", m);
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
     return null;
@@ -92,7 +92,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       if (scfgMap.containsKey(type)) {
         SparseAliasingCFG scfg = scfgMap.get(type);
         if (scfg.getGraph().nodes().contains(sootCurrentStmt)) {
-          LOGGER.info("BW Retrieve SCFG for {}", sootSurrentMethod.toString());
+          LOGGER.info("Retrieved SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
           SparseCFGQueryLog queryLog =
               new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
           logList.add(queryLog);
@@ -111,7 +111,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
   public SparseAliasingCFG createNewTASCFG(
       Val initialQueryVal, SootMethod sootSurrentMethod, Stmt sootCurrentStmt, String type) {
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-    LOGGER.info("BW Build SCFG for {}", sootSurrentMethod.toString());
+    LOGGER.info("Build SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
     queryLog.logStart();
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(

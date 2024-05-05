@@ -204,8 +204,7 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
     if (!isMatchingCallSiteCalleePair(callSite, transInCallee.getLabel().getMethod())) {
       return;
     }
-    LOGGER.info(
-        "propagateUnbalancedToCallSite at stmt: {} in method: {}", callSite, callSite.getMethod());
+    LOGGER.info("propagateUnbalancedToCallSite at stmt: {} in method: {}", callSite, callSite.getMethod());
     cfg.addSuccsOfListener(
         new SuccessorListener(callSite) {
           @Override
@@ -400,16 +399,12 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
     LOGGER.info("Forward Computing Successor - value: {} method: {} stmt: {}", value, method, curr);
     LOGGER.info("Forward Computing Successor - query: {}", query.getInfo());
     if (icfg.isExitStmt(curr.getTarget())) {
-      LOGGER.info(
-          "FCS: return flow at stmt: {} in method: {}", curr.getTarget().toString(), method);
+      LOGGER.info("FCS: return flow at stmt: {} in method: {}", curr.getTarget().toString(), method);
       returnFlow(method, node);
       return;
     }
     ((StaticCFG) cfg).setCurrentVal(value);
-    LOGGER.info(
-        "FCS: normal or control flow at stmt: {} in method: {}",
-        curr.getTarget().toString(),
-        method);
+    LOGGER.info("FCS: normal or call flow at stmt: {} in method: {}", curr.getTarget().toString(), method);
     cfg.addSuccsOfListener(
         new ForwardSolverSuccessorListener(curr, query, value, method, node, LOGGER, this));
   }
@@ -455,11 +450,9 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
       Method caller, Node<ControlFlowGraph.Edge, Val> currNode, Statement callSite) {
     LOGGER.trace(
         "Bypassing call flow of {} at callsite: {} for {}", currNode.fact(), callSite, this);
-    LOGGER.info(
-        "byPassFlowAtCallSite at stmt: {} in method {} in {}", callSite, callSite.getMethod());
+    LOGGER.info("byPassFlowAtCallSite at stmt: {} in method {} in {}", callSite, callSite.getMethod());
     cfg.addSuccsOfListener(
         new SuccessorListener(currNode.stmt().getTarget()) {
-
           @Override
           public void getSuccessor(Statement returnSite) {
             for (State s :
