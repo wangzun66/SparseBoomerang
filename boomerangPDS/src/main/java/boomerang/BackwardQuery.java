@@ -25,6 +25,19 @@ public class BackwardQuery extends Query {
     return "BackwardQuery: " + super.toString();
   }
 
+  @Override
+  public String getInfo() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("BackwardQuery: (Var: ");
+    builder.append(var().getVariableName());
+    builder.append(", Stmt: ");
+    builder.append(cfgEdge().getStart().toString());
+    builder.append(", ");
+    builder.append(cfgEdge().getMethod().toString());
+    builder.append(")");
+    return builder.toString();
+  }
+
   public static BackwardQuery make(Edge edge, Val variable) {
     return new BackwardQuery(edge, variable);
   }

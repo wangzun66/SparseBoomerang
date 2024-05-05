@@ -37,6 +37,10 @@ public abstract class Query {
     return new Node<>(cfgEdge, variable).toString();
   }
 
+  public String getInfo() {
+    return "Query";
+  }
+
   public Edge cfgEdge() {
     return cfgEdge;
   }

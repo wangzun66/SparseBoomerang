@@ -24,4 +24,17 @@ public class ForwardQuery extends Query {
   public String toString() {
     return "ForwardQuery: " + super.toString();
   }
+
+  @Override
+  public String getInfo() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("ForwardQuery: (Var: ");
+    builder.append(var().getVariableName());
+    builder.append(", Stmt: ");
+    builder.append(cfgEdge().getTarget().toString());
+    builder.append(", Method: ");
+    builder.append(cfgEdge().getMethod().toString());
+    builder.append(")");
+    return builder.toString();
+  }
 }
