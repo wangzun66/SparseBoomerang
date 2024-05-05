@@ -304,7 +304,9 @@ public abstract class WeightedBoomerang<W extends Weight> {
       if (rstmt.isAssign() && rstmt.getInvokeExpr().toString().contains(MAP_GET_SUB_SIGNATURE)) {
         if (rstmt.getInvokeExpr().getBase().equals(node.fact())) {
           BackwardQuery bwq = BackwardQuery.make(node.stmt(), rstmt.getInvokeExpr().getArg(0));
+          LOGGER.info("handleMapsForward_1");
           backwardSolve(bwq);
+          LOGGER.info("handleMapsForward_1 in {}", bwq.getInfo());
           cfg.addSuccsOfListener(
               new SuccessorListener(rstmt) {
                 @Override
@@ -331,7 +333,9 @@ public abstract class WeightedBoomerang<W extends Weight> {
         if (rstmt.getInvokeExpr().getArg(1).equals(node.fact())) {
 
           BackwardQuery bwq = BackwardQuery.make(node.stmt(), rstmt.getInvokeExpr().getArg(0));
+          LOGGER.info("handleMapsForward_2 in");
           backwardSolve(bwq);
+          LOGGER.info("handleMapsForward_2 in {}", bwq.getInfo());
           cfg.addSuccsOfListener(
               new SuccessorListener(rstmt) {
                 @Override
@@ -616,6 +620,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
       final ForwardQuery sourceQuery) {
     BackwardQuery backwardQuery = BackwardQuery.make(node.stmt(), fieldWritePoi.getBaseVar());
     if (node.fact().equals(fieldWritePoi.getStoredVar())) {
+      LOGGER.info("forwardHandleFieldWrite");
       backwardSolve(backwardQuery);
       queryGraph.addEdge(sourceQuery, node, backwardQuery);
       queryToSolvers
@@ -982,6 +987,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
     try {
       queryGraph.addRoot(query);
       LOGGER.trace("Starting backward analysis of: {}", query);
+      LOGGER.info("\n\nStarting analysis of {}", query.getInfo());
       backwardSolve(query);
     } catch (BoomerangTimeoutException e) {
       timedout = true;

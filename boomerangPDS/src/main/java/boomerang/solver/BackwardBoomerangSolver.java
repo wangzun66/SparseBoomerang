@@ -161,14 +161,20 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (notUsedInMethod(method, edge.getStart(), value)) {
       return;
     }
+    LOGGER.info(
+        "Backward Computing Successor - value: {} method: {} stmt: {}", value, method, edge);
+    LOGGER.info("Backward Computing Successor - query: {}", query.getInfo());
     if (edge.getStart().containsInvokeExpr()
         && edge.getStart().uses(value)
         && INTERPROCEDURAL
         && checkSpecialInvoke(edge)) {
+      LOGGER.info("BCS: call flow at stmt: {} in method: {}", edge.getStart().toString(), method);
       callFlow(method, node, edge.getStart());
     } else if (icfg.isExitStmt(edge.getStart())) {
+      LOGGER.info("BCS: return flow at stmt: {} in method: {}", edge.getStart().toString(), method);
       returnFlow(method, node);
     } else {
+      LOGGER.info("BCS: normal flow at stmt: {} in method: {}", edge.getStart().toString(), method);
       normalFlow(method, node);
     }
   }
@@ -200,6 +206,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
 
   private void propagateSparse(Method method, Node<Edge, Val> currNode, Edge curr, Val value) {
     Statement propStmt = curr.getStart();
+    LOGGER.info("Take SCFG for {}", method.toString());
     SparseAliasingCFG sparseCFG = getSparseCFG(query, method, value, propStmt);
     Stmt stmt = SootAdapter.asStmt(propStmt);
     if (sparseCFG.getGraph().nodes().contains(stmt)) {
@@ -303,6 +310,9 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (!isMatchingCallSiteCalleePair(callSite, transInCallee.getLabel().getMethod())) {
       return;
     }
+    LOGGER.info("propagateUnbalancedToCallSite - query: {}", query.getInfo());
+    LOGGER.info(
+        "propagateUnbalancedToCallSite at stmt: {} in method: {}", callSite, callSite.getMethod());
     cfg.addSuccsOfListener(
         new SuccessorListener(callSite) {
           @Override

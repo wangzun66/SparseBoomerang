@@ -12,15 +12,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import soot.SootMethod;
 import soot.jimple.Stmt;
 
 public class TypeBasedSparseCFGCache implements SparseCFGCache {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TypeBasedSparseCFGCache.class);
 
   List<SparseCFGQueryLog> logList = new ArrayList<>();
 
   Map<String, Map<String, SparseAliasingCFG>> cache;
-  // Map<String, SparseAliasingCFG> cache;
   TypeBasedSparseCFGBuilder sparseCFGBuilder;
 
   private static TypeBasedSparseCFGCache INSTANCE;
@@ -46,22 +48,26 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       scfgMap = cache.get(methodSign);
       String type = MainQueryInfo.getInstance().getVal().getType().toString();
       if (scfgMap.containsKey(type)) {
-        if (scfgMap.get(type).getGraph().nodes().contains(stmt)) {
+        SparseAliasingCFG scfg = scfgMap.get(type);
+        if (scfg.getGraph().nodes().contains(stmt)) {
+          LOGGER.info("FW Retrieve SCFG for {}", m);
           SparseCFGQueryLog queryLog =
               new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
           logList.add(queryLog);
-          return scfgMap.get(type);
+          return scfg;
         }
       }
     }
     for (SparseAliasingCFG scfg : scfgMap.values()) {
       if (scfg.getGraph().nodes().contains(stmt)) {
+        LOGGER.info("FW Retrieve SCFG for {}", m);
         SparseCFGQueryLog queryLog =
             new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
         logList.add(queryLog);
         return scfg;
       }
     }
+    LOGGER.info("Original CFG for {}", m);
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
     return null;
@@ -75,39 +81,37 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Statement currentStmt) {
 
     SootMethod sootSurrentMethod = SootAdapter.asSootMethod(currentMethod);
-    Stmt sootInitialQueryStmt = SootAdapter.asStmt(initialQueryStmt);
     Stmt sootCurrentStmt = SootAdapter.asStmt(currentStmt);
-    //    Value sootInitialQueryVal = SootAdapter.asValue(initialQueryVal);
-    //    Value sootCurrentQueryVal = SootAdapter.asValue(currentVal);
 
     String key = sootSurrentMethod.getSignature();
     String type = initialQueryVal.getType().toString();
 
-    // currentStmt must be part of the sparseCFG that was built for the initialQueryStmt
     // if not we'll built another sparseCFG for the currentStmt
     if (cache.containsKey(key)) {
       Map<String, SparseAliasingCFG> scfgMap = cache.get(key);
       if (scfgMap.containsKey(type)) {
         SparseAliasingCFG scfg = scfgMap.get(type);
         if (scfg.getGraph().nodes().contains(sootCurrentStmt)) {
+          LOGGER.info("BW Retrieve SCFG for {}", sootSurrentMethod.toString());
           SparseCFGQueryLog queryLog =
               new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
           logList.add(queryLog);
           return scfg;
         } else {
-          return createNewSCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
+          return createNewTASCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
         }
       } else {
-        return createNewSCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
+        return createNewTASCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
       }
     } else {
-      return createNewSCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
+      return createNewTASCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
     }
   }
 
-  public SparseAliasingCFG createNewSCFG(
+  public SparseAliasingCFG createNewTASCFG(
       Val initialQueryVal, SootMethod sootSurrentMethod, Stmt sootCurrentStmt, String type) {
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
+    LOGGER.info("BW Build SCFG for {}", sootSurrentMethod.toString());
     queryLog.logStart();
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(

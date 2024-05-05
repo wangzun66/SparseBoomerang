@@ -11,11 +11,15 @@ import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.scene.sparse.eval.PropagationCounter;
 import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 
 public class StaticCFG implements ObservableControlFlowGraph {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StaticCFG.class);
 
   private SparseCFGCache.SparsificationStrategy sparsificationStrategy;
 
@@ -44,6 +48,7 @@ public class StaticCFG implements ObservableControlFlowGraph {
     Method method = l.getCurr().getMethod();
     Statement curr = l.getCurr();
     if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
+      LOGGER.info("Take SCFG for {}", method.toString());
       SparseAliasingCFG sparseCFG = getSparseCFG(method, curr, currentVal);
       if (sparseCFG != null) {
         propagateSparse(l, method, curr, sparseCFG);
