@@ -6,7 +6,6 @@ import boomerang.scene.Val;
 import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
-import boomerang.scene.sparse.eval.MainQueryInfo;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,32 +40,8 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     this.sparseCFGBuilder = sparseCFGBuilder;
   }
 
+  // don't take scfg in the cache for forwardQuery, its scfg should be token in the solverCache
   public SparseAliasingCFG getSparseCFGForForwardPropagation(SootMethod m, Stmt stmt, Val val) {
-    String methodSign = m.getSignature();
-    Map<String, SparseAliasingCFG> scfgMap = new HashMap<>();
-    if (cache.containsKey(methodSign)) {
-      scfgMap = cache.get(methodSign);
-      String type = MainQueryInfo.getInstance().getVal().getType().toString();
-      if (scfgMap.containsKey(type)) {
-        SparseAliasingCFG scfg = scfgMap.get(type);
-        if (scfg.getGraph().nodes().contains(stmt)) {
-          LOGGER.info("FW Retrieved SCFG for {} from TypeBasedSparseCFGCache", m);
-          SparseCFGQueryLog queryLog =
-              new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
-          logList.add(queryLog);
-          return scfg;
-        }
-      }
-    }
-    for (SparseAliasingCFG scfg : scfgMap.values()) {
-      if (scfg.getGraph().nodes().contains(stmt)) {
-        LOGGER.info("FW Retrieved SCFG for {} from TypeBasedSparseCFGCache", m);
-        SparseCFGQueryLog queryLog =
-            new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
-        logList.add(queryLog);
-        return scfg;
-      }
-    }
     LOGGER.info("Original CFG for {} from TypeBasedSparseCFGCache", m);
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);

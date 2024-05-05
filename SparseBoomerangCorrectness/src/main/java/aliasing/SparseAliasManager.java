@@ -19,7 +19,6 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.*;
@@ -151,7 +150,8 @@ public class SparseAliasManager {
                         System.out.println(bwq.getInfo());
                       }
                       for (BackwardBoomerangSolver solver :
-                              boomerangSolver.getBackwardSolvers().values().stream().collect(Collectors.toSet())) {
+                          boomerangSolver.getBackwardSolvers().values().stream()
+                              .collect(Collectors.toSet())) {
                         System.out.println(solver.toString());
                       }
                       aliases = results.getAllAliases();
