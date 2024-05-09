@@ -4,11 +4,11 @@ import boomerang.scene.Val;
 import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGBuilder;
-import boomerang.scene.sparse.aliasaware.AliasAwareSparseCFGBuilder;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
 import com.google.common.graph.MutableGraph;
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import soot.*;
 import soot.jimple.InvokeExpr;
 import soot.jimple.Stmt;
@@ -17,7 +17,7 @@ import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.DirectedGraph;
 
 public class TypeBasedSparseCFGBuilder extends SparseCFGBuilder {
-  private static final Logger LOGGER = Logger.getLogger(AliasAwareSparseCFGBuilder.class.getName());
+  private static final Logger LOGGER = LoggerFactory.getLogger(TypeBasedSparseCFGBuilder.class);
 
   private boolean enableExceptions;
   private Deque<Type> typeWorklist;
