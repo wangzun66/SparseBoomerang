@@ -74,6 +74,7 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
     this.query = query;
     this.flowFunctions = flowFunctions;
     this.flowFunctions.setSolver(this, fieldLoadStatements, fieldStoreStatements);
+    ((StaticCFG) cfg).setInitialFQVariableType(query.getType().toString());
   }
 
   @Override

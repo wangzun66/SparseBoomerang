@@ -41,7 +41,20 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
   }
 
   // don't take scfg in the cache for forwardQuery, its scfg should be token in the solverCache
-  public SparseAliasingCFG getSparseCFGForForwardPropagation(SootMethod m, Stmt stmt, Val val) {
+  public synchronized SparseAliasingCFG getSparseCFGForForwardPropagation(
+      SootMethod m, Stmt stmt, Val val, String initialFQValueType) {
+    String key = m.getSignature();
+    if (cache.containsKey(key)) {
+      Map<String, SparseAliasingCFG> scfgMap = cache.get(key);
+      if (scfgMap.containsKey(initialFQValueType)) {
+        SparseAliasingCFG scfg = scfgMap.get(initialFQValueType);
+        LOGGER.info("Forward Retrieved SCFG for {} from TypeBasedSparseCFGCache", m);
+        SparseCFGQueryLog queryLog =
+            new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
+        logList.add(queryLog);
+        return scfg;
+      }
+    }
     LOGGER.info("Original CFG for {} from TypeBasedSparseCFGCache", m);
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
@@ -67,7 +80,8 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       if (scfgMap.containsKey(type)) {
         SparseAliasingCFG scfg = scfgMap.get(type);
         if (scfg.getGraph().nodes().contains(sootCurrentStmt)) {
-          LOGGER.info("Retrieved SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
+          LOGGER.info(
+              "Backward Retrieved SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
           SparseCFGQueryLog queryLog =
               new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
           logList.add(queryLog);
@@ -83,7 +97,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     }
   }
 
-  public SparseAliasingCFG createNewTASCFG(
+  private synchronized SparseAliasingCFG createNewTASCFG(
       Val initialQueryVal, SootMethod sootSurrentMethod, Stmt sootCurrentStmt, String type) {
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
     LOGGER.info("Build SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
@@ -97,7 +111,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     return scfg;
   }
 
-  public void put(String methodSignature, String type, SparseAliasingCFG scfg) {
+  private void put(String methodSignature, String type, SparseAliasingCFG scfg) {
     Map<String, SparseAliasingCFG> scfgMap;
     if (cache.containsKey(methodSignature)) {
       scfgMap = cache.get(methodSignature);
