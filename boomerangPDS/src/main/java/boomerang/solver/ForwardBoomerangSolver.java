@@ -11,6 +11,7 @@
  */
 package boomerang.solver;
 
+import boomerang.BackwardQuery;
 import boomerang.BoomerangOptions;
 import boomerang.ForwardQuery;
 import boomerang.Query;
@@ -55,12 +56,14 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
   private static final org.slf4j.Logger LOGGER =
       LoggerFactory.getLogger(ForwardBoomerangSolver.class);
   private final ForwardQuery query;
+  private final BackwardQuery mainQuery;
   private final IForwardFlowFunction flowFunctions;
 
   public ForwardBoomerangSolver(
       ObservableICFG<Statement, Method> callGraph,
       ObservableControlFlowGraph cfg,
       ForwardQuery query,
+      BackwardQuery mainQuery,
       Map<Entry<INode<Node<Edge, Val>>, Field>, INode<Node<Edge, Val>>> genField,
       BoomerangOptions options,
       NestedWeightedPAutomatons<Edge, INode<Val>, W> callSummaries,
@@ -72,9 +75,10 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
       Type propagationType) {
     super(callGraph, cfg, genField, options, callSummaries, fieldSummaries, scope, propagationType);
     this.query = query;
+    this.mainQuery = mainQuery;
     this.flowFunctions = flowFunctions;
     this.flowFunctions.setSolver(this, fieldLoadStatements, fieldStoreStatements);
-    ((StaticCFG) cfg).setInitialFQVariableType(query.getType().toString());
+    ((StaticCFG) cfg).setInitialQueryVarType(mainQuery.var().getType().toString());
   }
 
   @Override

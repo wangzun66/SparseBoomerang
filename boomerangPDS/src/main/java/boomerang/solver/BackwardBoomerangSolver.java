@@ -219,7 +219,6 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
      * scfg for the method from global cache for whole apk and update in solver-cache don't forget
      * update scfg and methodsig in local
      */
-    // todo: polymorphism for SolverCache
     LOGGER.info("Take SCFG for {}", method.toString());
     SparseAliasingCFG sparseCFG = null;
     String methodSig = SootAdapter.asSootMethod(method).getSignature();
@@ -241,19 +240,41 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
       this.currentSCFG = sparseCFG;
     }
     if (sparseCFG.getGraph().nodes().contains(stmt)) {
-      Set<Unit> predecessors = sparseCFG.getGraph().predecessors(stmt);
-      for (Unit pred : predecessors) {
-        Collection<State> flow =
-            computeNormalFlow(
-                method, new Edge(SootAdapter.asStatement(pred, method), propStmt), value);
-        for (State s : flow) {
-          PropagationCounter.getInstance(options.getSparsificationStrategy()).countBackward();
-          propagate(currNode, s);
-        }
-      }
+      LOGGER.info("Propagate on Sparse CFG");
+      propagateOnSCFG(sparseCFG, method, currNode, propStmt, value);
     } else {
-      // todo: why there are stmts not in scfg, can skip them?
-      LOGGER.info("{} is not in the scfg!", stmt);
+      LOGGER.info("Propagate on Original CFG");
+      propagateOnCFG(method, currNode, propStmt, value);
+    }
+  }
+
+  private void propagateOnSCFG(
+      SparseAliasingCFG sparseCFG,
+      Method method,
+      Node<Edge, Val> currNode,
+      Statement propStmt,
+      Val value) {
+    Stmt stmt = SootAdapter.asStmt(propStmt);
+    Set<Unit> predecessors = sparseCFG.getGraph().predecessors(stmt);
+    for (Unit pred : predecessors) {
+      Collection<State> flow =
+          computeNormalFlow(
+              method, new Edge(SootAdapter.asStatement(pred, method), propStmt), value);
+      for (State s : flow) {
+        PropagationCounter.getInstance(options.getSparsificationStrategy()).countBackward();
+        propagate(currNode, s);
+      }
+    }
+  }
+
+  private void propagateOnCFG(
+      Method method, Node<Edge, Val> currNode, Statement propStmt, Val value) {
+    for (Statement pred : method.getControlFlowGraph().getPredsOf(propStmt)) {
+      Collection<State> flow = computeNormalFlow(method, new Edge(pred, propStmt), value);
+      for (State s : flow) {
+        PropagationCounter.getInstance(options.getSparsificationStrategy()).countBackward();
+        propagate(currNode, s);
+      }
     }
   }
 

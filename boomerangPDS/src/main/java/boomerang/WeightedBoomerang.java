@@ -304,9 +304,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
       if (rstmt.isAssign() && rstmt.getInvokeExpr().toString().contains(MAP_GET_SUB_SIGNATURE)) {
         if (rstmt.getInvokeExpr().getBase().equals(node.fact())) {
           BackwardQuery bwq = BackwardQuery.make(node.stmt(), rstmt.getInvokeExpr().getArg(0));
-          LOGGER.info("handleMapsForward_1");
           backwardSolve(bwq);
-          LOGGER.info("handleMapsForward_1 in {}", bwq.getInfo());
           cfg.addSuccsOfListener(
               new SuccessorListener(rstmt) {
                 @Override
@@ -333,9 +331,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
         if (rstmt.getInvokeExpr().getArg(1).equals(node.fact())) {
 
           BackwardQuery bwq = BackwardQuery.make(node.stmt(), rstmt.getInvokeExpr().getArg(0));
-          LOGGER.info("handleMapsForward_2 in");
           backwardSolve(bwq);
-          LOGGER.info("handleMapsForward_2 in {}", bwq.getInfo());
           cfg.addSuccsOfListener(
               new SuccessorListener(rstmt) {
                 @Override
@@ -450,12 +446,15 @@ public abstract class WeightedBoomerang<W extends Weight> {
     return options.getAllocationVal(s.getStart().getMethod(), s.getStart(), fact);
   }
 
+  private BackwardQuery mainQuery;
+
   protected ForwardBoomerangSolver<W> createForwardSolver(final ForwardQuery sourceQuery) {
     final ForwardBoomerangSolver<W> solver =
         new ForwardBoomerangSolver<W>(
             icfg(),
             cfg(),
             sourceQuery,
+            mainQuery,
             genField,
             options,
             createCallSummaries(sourceQuery, forwardCallSummaries),
@@ -971,6 +970,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
   }
 
   public BackwardBoomerangResults<W> solve(BackwardQuery query) {
+    this.mainQuery = query;
     return solve(query, true);
   }
 

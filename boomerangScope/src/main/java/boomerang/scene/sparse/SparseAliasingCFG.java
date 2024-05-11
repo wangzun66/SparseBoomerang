@@ -54,4 +54,11 @@ public class SparseAliasingCFG {
   public MutableGraph<Unit> getGraph() {
     return this.graph;
   }
+
+  public int getUnitDepth(Unit unit) {
+    if (unitToNumber.containsKey(unit)) {
+      return unitToNumber.get(unit);
+    }
+    return -1;
+  }
 }

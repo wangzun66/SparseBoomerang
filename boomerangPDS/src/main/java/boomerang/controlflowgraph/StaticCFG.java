@@ -30,14 +30,14 @@ public class StaticCFG implements ObservableControlFlowGraph {
 
   private SparseAliasingCFG currentSCFG = null;
   private String currMethodSig = "";
-  private String initialFQVariableType;
+  private String initialQueryVarType;
 
   public void setCurrentVal(Val val) {
     this.currentVal = val;
   }
 
-  public void setInitialFQVariableType(String type) {
-    this.initialFQVariableType = type;
+  public void setInitialQueryVarType(String type) {
+    this.initialQueryVarType = type;
   }
 
   public StaticCFG(BoomerangOptions options) {
@@ -66,22 +66,24 @@ public class StaticCFG implements ObservableControlFlowGraph {
         LOGGER.info("Retrieved in ForwardBoomerangSolver");
       } else {
         if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.TYPE_BASED) {
-          sparseCFG = TASCFGSolverCache.getInstance().get(methodSig, initialFQVariableType);
+          sparseCFG = TASCFGSolverCache.getInstance().get(methodSig, initialQueryVarType);
         } else if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.ALIAS_AWARE) {
           // todo: add for AAS
         }
         if (sparseCFG == null) {
-          sparseCFG = getSparseCFG(method, curr, currentVal, initialFQVariableType);
+          sparseCFG = getSparseCFG(method, curr, currentVal, initialQueryVarType);
+        }
+        if (sparseCFG != null) {
+          currentSCFG = sparseCFG;
+          currMethodSig = methodSig;
         }
       }
       if (sparseCFG != null && sparseCFG.getGraph().nodes().contains(currStmt)) {
-        currentSCFG = sparseCFG;
-        currMethodSig = methodSig;
+        LOGGER.info("Propagate on Sparse CFG");
         propagateSparse(l, method, curr, sparseCFG);
       } else {
-        currentSCFG = null;
-        currMethodSig = "";
-        propagateDefault(l); // back up when not found
+        LOGGER.info("Propagate on Original CFG");
+        propagateDefault(l);
       }
     } else {
       propagateDefault(l);
@@ -105,7 +107,7 @@ public class StaticCFG implements ObservableControlFlowGraph {
   }
 
   private SparseAliasingCFG getSparseCFG(
-      Method method, Statement stmt, Val currentVal, String initialFQVariableType) {
+      Method method, Statement stmt, Val currentVal, String initialQueryVarType) {
     SootMethod sootMethod = ((JimpleMethod) method).getDelegate();
     Stmt sootStmt = ((JimpleStatement) stmt).getDelegate();
     SparseCFGCache sparseCFGCache =
@@ -113,7 +115,7 @@ public class StaticCFG implements ObservableControlFlowGraph {
             sparsificationStrategy, options.ignoreSparsificationAfterQuery());
     SparseAliasingCFG sparseCFG =
         sparseCFGCache.getSparseCFGForForwardPropagation(
-            sootMethod, sootStmt, currentVal, initialFQVariableType);
+            sootMethod, sootStmt, currentVal, initialQueryVarType);
     return sparseCFG;
   }
 
