@@ -619,7 +619,6 @@ public abstract class WeightedBoomerang<W extends Weight> {
       final ForwardQuery sourceQuery) {
     BackwardQuery backwardQuery = BackwardQuery.make(node.stmt(), fieldWritePoi.getBaseVar());
     if (node.fact().equals(fieldWritePoi.getStoredVar())) {
-      LOGGER.info("forwardHandleFieldWrite");
       backwardSolve(backwardQuery);
       queryGraph.addEdge(sourceQuery, node, backwardQuery);
       queryToSolvers
@@ -987,7 +986,6 @@ public abstract class WeightedBoomerang<W extends Weight> {
     try {
       queryGraph.addRoot(query);
       LOGGER.trace("Starting backward analysis of: {}", query);
-      LOGGER.info("\n\nStarting analysis of {}", query.getInfo());
       backwardSolve(query);
     } catch (BoomerangTimeoutException e) {
       timedout = true;

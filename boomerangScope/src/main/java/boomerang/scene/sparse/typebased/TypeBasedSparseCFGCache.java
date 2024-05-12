@@ -45,7 +45,6 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Map<String, SparseAliasingCFG> scfgMap = cache.get(key);
       if (scfgMap.containsKey(initialQueryType)) {
         SparseAliasingCFG scfg = scfgMap.get(initialQueryType);
-        LOGGER.info("Forward Retrieved SCFG for {} from TypeBasedSparseCFGCache", m);
         SparseCFGQueryLog queryLog =
             new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
         logList.add(queryLog);
@@ -74,8 +73,6 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Map<String, SparseAliasingCFG> scfgMap = cache.get(methodSignature);
       if (scfgMap.containsKey(typeKey)) {
         SparseAliasingCFG scfg = scfgMap.get(typeKey);
-        LOGGER.info(
-            "Backward Retrieved SCFG for {} from TypeBasedSparseCFGCache", sootCurrentMethod);
         SparseCFGQueryLog queryLog =
             new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
         logList.add(queryLog);
@@ -94,7 +91,6 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Stmt sootCurrentStmt,
       String initialQueryVarType) {
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-    LOGGER.info("Build SCFG for {} from TypeBasedSparseCFGCache", sootCurrentMethod);
     queryLog.logStart();
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(

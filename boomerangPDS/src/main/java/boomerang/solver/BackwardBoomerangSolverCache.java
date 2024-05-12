@@ -33,7 +33,6 @@ public class BackwardBoomerangSolverCache {
   @Nullable
   public SparseAliasingCFG get(String methodSig) {
     if (cache.containsKey(methodSig)) {
-      LOGGER.info("Retrieved in SolverCache");
       return cache.get(methodSig);
     }
     return null;

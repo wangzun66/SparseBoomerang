@@ -164,20 +164,14 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (notUsedInMethod(method, edge.getStart(), value)) {
       return;
     }
-    LOGGER.info(
-        "Backward Computing Successor - value: {} method: {} stmt: {}", value, method, edge);
-    LOGGER.info("Backward Computing Successor - query: {}", query.getInfo());
     if (edge.getStart().containsInvokeExpr()
         && edge.getStart().uses(value)
         && INTERPROCEDURAL
         && checkSpecialInvoke(edge)) {
-      LOGGER.info("BCS: call flow at stmt: {} in method: {}", edge.getStart().toString(), method);
       callFlow(method, node, edge.getStart());
     } else if (icfg.isExitStmt(edge.getStart())) {
-      LOGGER.info("BCS: return flow at stmt: {} in method: {}", edge.getStart().toString(), method);
       returnFlow(method, node);
     } else {
-      LOGGER.info("BCS: normal flow at stmt: {} in method: {}", edge.getStart().toString(), method);
       normalFlow(method, node);
     }
   }
@@ -218,9 +212,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
      * scfg for the method from global cache for whole apk and update in solver-cache don't forget
      * update scfg and methodsig in local
      */
-    LOGGER.info("Take SCFG for {}", method.toString());
     if (methodSig.equals(currMethodSig)) {
-      LOGGER.info("Retrieved in BackwardBoomerangSolver");
     } else {
       this.currMethodSig = methodSig;
       SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
@@ -231,10 +223,8 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
       currentSCFG = sparseCFG;
     }
     if (currentSCFG.getGraph().nodes().contains(stmt)) {
-      LOGGER.info("Propagate on Sparse CFG");
       propagateOnSCFG(currentSCFG, method, currNode, propStmt, value);
     } else {
-      LOGGER.info("Propagate on Original CFG");
       propagateOnCFG(method, currNode, propStmt, value);
     }
   }
@@ -354,9 +344,6 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (!isMatchingCallSiteCalleePair(callSite, transInCallee.getLabel().getMethod())) {
       return;
     }
-    LOGGER.info("propagateUnbalancedToCallSite - query: {}", query.getInfo());
-    LOGGER.info(
-        "propagateUnbalancedToCallSite at stmt: {} in method: {}", callSite, callSite.getMethod());
     cfg.addSuccsOfListener(
         new SuccessorListener(callSite) {
           @Override
