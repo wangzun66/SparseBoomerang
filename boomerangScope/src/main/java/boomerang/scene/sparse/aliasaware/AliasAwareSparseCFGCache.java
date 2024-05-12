@@ -40,24 +40,13 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
     this.sparseCFGBuilder = sparseCFGBuilder;
   }
 
+  /**It is not possible take an aas-scfg in global cache for forward propagation, because the first encountered stmt
+      must be not the stmt which is used for building the aas-scfg. Therefore, we only retrieve aas-scfgs from solver
+      cache.*/
+  @Deprecated
   public SparseAliasingCFG getSparseCFGForForwardPropagation(
       SootMethod m, Stmt stmt, Val val, String initialQueryVarType) {
-    Value sootCurrentValue = SootAdapter.asValue(val);
-    if (cache.containsKey(m.getSignature())) {
-      Map<String, Set<SparseAliasingCFG>> stmtToSCFGs = cache.get(m.getSignature());
-      if (stmtToSCFGs.containsKey(stmt.toString())) {
-        Set<SparseAliasingCFG> scfgs = stmtToSCFGs.get(stmt.toString());
-        for (SparseAliasingCFG scfg : scfgs) {
-          if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
-            LOGGER.info("Forward Retrieved SCFG for {} from AliasAwareSparseCFGCache", m);
-            SparseCFGQueryLog queryLog =
-                new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
-            logList.add(queryLog);
-            return scfg;
-          }
-        }
-      }
-    }
+
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
     return null;

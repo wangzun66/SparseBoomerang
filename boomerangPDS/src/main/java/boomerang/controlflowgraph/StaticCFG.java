@@ -64,12 +64,6 @@ public class StaticCFG implements ObservableControlFlowGraph {
         LOGGER.info("Retrieved in ForwardBoomerangSolver");
       } else {
         SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
-        if (sparseCFG == null) {
-          sparseCFG = getSparseCFG(method, curr, currentVal, initialQueryVarType);
-          if (sparseCFG != null) {
-            BackwardBoomerangSolverCache.getInstance().put(methodSig, sparseCFG);
-          }
-        }
         currentSCFG = sparseCFG;
       }
       if (currentSCFG != null && currentSCFG.getGraph().nodes().contains(currStmt)) {
@@ -100,6 +94,10 @@ public class StaticCFG implements ObservableControlFlowGraph {
     }
   }
 
+  /**It is not possible take an aas-scfg in global cache for forward propagation, because the first encountered stmt
+   must be not the stmt which is used for building the aas-scfg for the current resolving query.
+   Therefore, we only retrieve aas-scfgs from solver cache*/
+  @Deprecated
   private SparseAliasingCFG getSparseCFG(
       Method method, Statement stmt, Val currentVal, String initialQueryVarType) {
     SootMethod sootMethod = ((JimpleMethod) method).getDelegate();
