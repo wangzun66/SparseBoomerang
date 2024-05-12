@@ -26,8 +26,6 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
 
   private static TypeBasedSparseCFGCache INSTANCE;
 
-  private TypeBasedSparseCFGCache() {}
-
   public static TypeBasedSparseCFGCache getInstance() {
     if (INSTANCE == null) {
       INSTANCE = new TypeBasedSparseCFGCache(new TypeBasedSparseCFGBuilder(true));
@@ -66,41 +64,44 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Val currentVal,
       Statement currentStmt) {
 
-    SootMethod sootSurrentMethod = SootAdapter.asSootMethod(currentMethod);
+    SootMethod sootCurrentMethod = SootAdapter.asSootMethod(currentMethod);
     Stmt sootCurrentStmt = SootAdapter.asStmt(currentStmt);
 
-    String key = sootSurrentMethod.getSignature();
-    String type = initialQueryVal.getType().toString();
+    String methodSignature = sootCurrentMethod.getSignature();
+    String typeKey = initialQueryVal.getType().toString();
 
-    if (cache.containsKey(key)) {
-      Map<String, SparseAliasingCFG> scfgMap = cache.get(key);
-      if (scfgMap.containsKey(type)) {
-        SparseAliasingCFG scfg = scfgMap.get(type);
+    if (cache.containsKey(methodSignature)) {
+      Map<String, SparseAliasingCFG> scfgMap = cache.get(methodSignature);
+      if (scfgMap.containsKey(typeKey)) {
+        SparseAliasingCFG scfg = scfgMap.get(typeKey);
         LOGGER.info(
-            "Backward Retrieved SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
+            "Backward Retrieved SCFG for {} from TypeBasedSparseCFGCache", sootCurrentMethod);
         SparseCFGQueryLog queryLog =
             new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
         logList.add(queryLog);
         return scfg;
       } else {
-        return createNewTASCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
+        return createNewTASCFG(initialQueryVal, sootCurrentMethod, sootCurrentStmt, typeKey);
       }
     } else {
-      return createNewTASCFG(initialQueryVal, sootSurrentMethod, sootCurrentStmt, type);
+      return createNewTASCFG(initialQueryVal, sootCurrentMethod, sootCurrentStmt, typeKey);
     }
   }
 
-  private synchronized SparseAliasingCFG createNewTASCFG(
-      Val initialQueryVal, SootMethod sootSurrentMethod, Stmt sootCurrentStmt, String type) {
+  private SparseAliasingCFG createNewTASCFG(
+      Val initialQueryVal,
+      SootMethod sootCurrentMethod,
+      Stmt sootCurrentStmt,
+      String initialQueryVarType) {
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-    LOGGER.info("Build SCFG for {} from TypeBasedSparseCFGCache", sootSurrentMethod);
+    LOGGER.info("Build SCFG for {} from TypeBasedSparseCFGCache", sootCurrentMethod);
     queryLog.logStart();
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
-            initialQueryVal, sootSurrentMethod, sootCurrentStmt, queryLog);
+            initialQueryVal, sootCurrentMethod, sootCurrentStmt, queryLog);
     queryLog.logEnd();
     logList.add(queryLog);
-    put(sootSurrentMethod.getSignature(), type, scfg);
+    put(sootCurrentMethod.getSignature(), initialQueryVarType, scfg);
     return scfg;
   }
 

@@ -53,6 +53,7 @@ public class AliasAwareSparseCFGBuilder extends SparseCFGBuilder {
 
   public SparseAliasingCFG buildSparseCFG(
       Val initialQueryVar, SootMethod m, Val queryVar, Unit queryStmt, SparseCFGQueryLog queryLog) {
+    init();
     currentMethod = m;
     this.queryStmt = queryStmt;
     queryVarType = SootAdapter.getTypeOfVal(initialQueryVar);

@@ -7,24 +7,24 @@ import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import soot.SootMethod;
+import soot.Value;
 import soot.jimple.Stmt;
 
 public class AliasAwareSparseCFGCache implements SparseCFGCache {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(AliasAwareSparseCFGCache.class);
+
   List<SparseCFGQueryLog> logList = new ArrayList<>();
 
-  Map<String, SparseAliasingCFG> cache;
+  Map<String, Map<String, Set<SparseAliasingCFG>>> cache;
   AliasAwareSparseCFGBuilder sparseCFGBuilder;
 
   private static AliasAwareSparseCFGCache INSTANCE;
   private static boolean ignore;
-
-  private AliasAwareSparseCFGCache() {}
 
   public static AliasAwareSparseCFGCache getInstance(boolean ignoreAfterQuery) {
     if (INSTANCE == null || ignore != ignoreAfterQuery) {
@@ -40,22 +40,26 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
     this.sparseCFGBuilder = sparseCFGBuilder;
   }
 
-  // TODO: unify in super
-  public SparseAliasingCFG getSparseCFGForForwardPropagation(SootMethod m, Stmt stmt, Val val) {
-    for (String s : cache.keySet()) {
-      if (s.startsWith(m.getSignature())) {
-        SparseAliasingCFG sparseAliasingCFG = cache.get(s);
-        if (sparseAliasingCFG.getGraph().nodes().contains(stmt)) {
-          SparseCFGQueryLog queryLog =
-              new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
-          logList.add(queryLog);
-          return sparseAliasingCFG;
+  public SparseAliasingCFG getSparseCFGForForwardPropagation(
+      SootMethod m, Stmt stmt, Val val, String initialQueryVarType) {
+    Value sootCurrentValue = SootAdapter.asValue(val);
+    if (cache.containsKey(m.getSignature())) {
+      Map<String, Set<SparseAliasingCFG>> stmtToSCFGs = cache.get(m.getSignature());
+      if (stmtToSCFGs.containsKey(stmt.toString())) {
+        Set<SparseAliasingCFG> scfgs = stmtToSCFGs.get(stmt.toString());
+        for (SparseAliasingCFG scfg : scfgs) {
+          if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
+            LOGGER.info("Forward Retrieved SCFG for {} from AliasAwareSparseCFGCache", m);
+            SparseCFGQueryLog queryLog =
+                new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.FWD);
+            logList.add(queryLog);
+            return scfg;
+          }
         }
       }
     }
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
-    // throw new RuntimeException("CFG not found for:" + m + " s:" + stmt);
     return null;
   }
 
@@ -66,55 +70,64 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
       Val currentVal,
       Statement currentStmt) {
 
-    SootMethod sootSurrentMethod = SootAdapter.asSootMethod(currentMethod);
-    Stmt sootInitialQueryStmt = SootAdapter.asStmt(initialQueryStmt);
+    SootMethod sootCurrentMethod = SootAdapter.asSootMethod(currentMethod);
     Stmt sootCurrentStmt = SootAdapter.asStmt(currentStmt);
-    // Value sootInitialQueryVal = SootAdapter.asValue(initialQueryVal);
-    // Value sootCurrentQueryVal = SootAdapter.asValue(currentVal);
+    Value sootCurrentValue = SootAdapter.asValue(currentVal);
+    String methodSig = sootCurrentMethod.getSignature();
 
-    String key =
-        new StringBuilder(sootSurrentMethod.getSignature())
-            .append("-")
-            .append(initialQueryVal)
-            .append("-")
-            .append(sootInitialQueryStmt)
-            .toString();
-
-    if (cache.containsKey(key)) {
-      if (cache.get(key).getGraph().nodes().contains(sootCurrentStmt)) {
-        SparseCFGQueryLog queryLog =
-            new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
-        logList.add(queryLog);
-        return cache.get(key);
+    if (cache.containsKey(methodSig)) {
+      Map<String, Set<SparseAliasingCFG>> stmtToSCFGs = cache.get(methodSig);
+      if (stmtToSCFGs.containsKey(sootCurrentStmt.toString())) {
+        Set<SparseAliasingCFG> scfgs = stmtToSCFGs.get(sootCurrentStmt.toString());
+        for (SparseAliasingCFG scfg : scfgs) {
+          if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
+            LOGGER.info(
+                "Backward Retrieved SCFG for {} from AliasAwareSparseCFGCache", sootCurrentMethod);
+            SparseCFGQueryLog queryLog =
+                new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
+            logList.add(queryLog);
+            return scfg;
+          }
+        }
+        return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
       } else {
-        SparseCFGQueryLog queryLog =
-            new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-        queryLog.logStart();
-        SparseAliasingCFG cfg =
-            sparseCFGBuilder.buildSparseCFG(
-                initialQueryVal, sootSurrentMethod, currentVal, sootCurrentStmt, queryLog);
-        queryLog.logEnd();
-        cache.put(key + currentStmt, cfg);
-        logList.add(queryLog);
-        return cfg;
+        return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
       }
-    } else if (cache.containsKey(key + currentStmt)) {
-      SparseCFGQueryLog queryLog =
-          new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
-      logList.add(queryLog);
-      return cache.get(key + currentStmt);
     } else {
-      SparseCFGQueryLog queryLog =
-          new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
-      queryLog.logStart();
-      SparseAliasingCFG cfg =
-          sparseCFGBuilder.buildSparseCFG(
-              initialQueryVal, sootSurrentMethod, currentVal, sootCurrentStmt, queryLog);
-      queryLog.logEnd();
-      cache.put(key, cfg);
-      logList.add(queryLog);
-      return cfg;
+      return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
     }
+  }
+
+  private SparseAliasingCFG createNewAASCFG(
+      Val initialQueryVal, SootMethod sootCurrentMethod, Val currentVal, Stmt sootCurrentStmt) {
+    SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.BWD);
+    LOGGER.info("Build SCFG for {} from AliasAwareSparseCFGCache", sootCurrentMethod);
+    queryLog.logStart();
+    SparseAliasingCFG scfg =
+        sparseCFGBuilder.buildSparseCFG(
+            initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt, queryLog);
+    queryLog.logEnd();
+    logList.add(queryLog);
+    put(sootCurrentMethod.getSignature(), sootCurrentStmt.toString(), scfg);
+    return scfg;
+  }
+
+  private void put(String methodSignature, String stmtKey, SparseAliasingCFG scfg) {
+    Map<String, Set<SparseAliasingCFG>> scfgsMap;
+    if (cache.containsKey(methodSignature)) {
+      scfgsMap = cache.get(methodSignature);
+    } else {
+      scfgsMap = new HashMap<>();
+      cache.put(methodSignature, scfgsMap);
+    }
+    Set<SparseAliasingCFG> scfgs;
+    if (scfgsMap.containsKey(stmtKey)) {
+      scfgs = scfgsMap.get(stmtKey);
+    } else {
+      scfgs = new HashSet<>();
+      scfgsMap.put(stmtKey, scfgs);
+    }
+    scfgs.add(scfg);
   }
 
   @Override

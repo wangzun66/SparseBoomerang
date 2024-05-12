@@ -10,7 +10,7 @@ import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.scene.sparse.eval.PropagationCounter;
-import boomerang.solver.TASCFGSolverCache;
+import boomerang.solver.BackwardBoomerangSolverCache;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,29 +58,23 @@ public class StaticCFG implements ObservableControlFlowGraph {
     Statement curr = l.getCurr();
     if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
       LOGGER.info("Take SCFG for {}", method.toString());
-      SparseAliasingCFG sparseCFG = null;
       String methodSig = SootAdapter.asSootMethod(method).getSignature();
       Stmt currStmt = SootAdapter.asStmt(curr);
-      if (currentSCFG != null && methodSig.equals(currMethodSig)) {
-        sparseCFG = currentSCFG;
+      if (methodSig.equals(currMethodSig)) {
         LOGGER.info("Retrieved in ForwardBoomerangSolver");
       } else {
-        if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.TYPE_BASED) {
-          sparseCFG = TASCFGSolverCache.getInstance().get(methodSig, initialQueryVarType);
-        } else if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.ALIAS_AWARE) {
-          // todo: add for AAS
-        }
+        SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
         if (sparseCFG == null) {
           sparseCFG = getSparseCFG(method, curr, currentVal, initialQueryVarType);
+          if (sparseCFG != null) {
+            BackwardBoomerangSolverCache.getInstance().put(methodSig, sparseCFG);
+          }
         }
-        if (sparseCFG != null) {
-          currentSCFG = sparseCFG;
-          currMethodSig = methodSig;
-        }
+        currentSCFG = sparseCFG;
       }
-      if (sparseCFG != null && sparseCFG.getGraph().nodes().contains(currStmt)) {
+      if (currentSCFG != null && currentSCFG.getGraph().nodes().contains(currStmt)) {
         LOGGER.info("Propagate on Sparse CFG");
-        propagateSparse(l, method, curr, sparseCFG);
+        propagateSparse(l, method, curr, currentSCFG);
       } else {
         LOGGER.info("Propagate on Original CFG");
         propagateDefault(l);
