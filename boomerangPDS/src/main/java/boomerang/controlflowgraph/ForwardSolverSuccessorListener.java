@@ -125,8 +125,7 @@ public class ForwardSolverSuccessorListener extends SuccessorListener {
     SparseCFGCache sparseCFGCache =
         SparseCFGCache.getInstance(owner.getOptions().getSparsificationStrategy(), true);
     SparseAliasingCFG sparseCFG =
-        sparseCFGCache.getSparseCFGForForwardPropagation(
-            sootMethod, query.getType().toString());
+        sparseCFGCache.getSparseCFGForForwardPropagation(sootMethod, query.getType().toString());
     return sparseCFG;
   }
 }

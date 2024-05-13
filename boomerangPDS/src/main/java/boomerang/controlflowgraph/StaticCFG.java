@@ -3,9 +3,7 @@ package boomerang.controlflowgraph;
 import boomerang.BoomerangOptions;
 import boomerang.scene.Method;
 import boomerang.scene.Statement;
-import boomerang.scene.Val;
 import boomerang.scene.jimple.JimpleMethod;
-import boomerang.scene.jimple.JimpleStatement;
 import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
@@ -56,7 +54,7 @@ public class StaticCFG implements ObservableControlFlowGraph {
       if (!methodSig.equals(currMethodSig)) {
         currMethodSig = methodSig;
         SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
-        if(sparseCFG == null){
+        if (sparseCFG == null) {
           sparseCFG = getSparseCFG(method, initialQueryVarType);
         }
         currentSCFG = sparseCFG;
@@ -87,15 +85,13 @@ public class StaticCFG implements ObservableControlFlowGraph {
     }
   }
 
-  private SparseAliasingCFG getSparseCFG(
-      Method method, String initialQueryVarType) {
+  private SparseAliasingCFG getSparseCFG(Method method, String initialQueryVarType) {
     SootMethod sootMethod = ((JimpleMethod) method).getDelegate();
     SparseCFGCache sparseCFGCache =
         SparseCFGCache.getInstance(
             sparsificationStrategy, options.ignoreSparsificationAfterQuery());
     SparseAliasingCFG sparseCFG =
-        sparseCFGCache.getSparseCFGForForwardPropagation(
-            sootMethod, initialQueryVarType);
+        sparseCFGCache.getSparseCFGForForwardPropagation(sootMethod, initialQueryVarType);
     return sparseCFG;
   }
 

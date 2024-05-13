@@ -8,7 +8,6 @@ import boomerang.scene.sparse.eval.SparseCFGQueryLog;
 import boomerang.scene.sparse.typebased.TypeBasedSparseCFGCache;
 import java.util.List;
 import soot.SootMethod;
-import soot.jimple.Stmt;
 
 public interface SparseCFGCache {
 
@@ -29,11 +28,8 @@ public interface SparseCFGCache {
     }
   }
 
-  /**
-   * For retrieving the same {@link SparseAliasingCFG} built by the backward query
-   */
-  SparseAliasingCFG getSparseCFGForForwardPropagation(
-      SootMethod m, String type);
+  /** For retrieving the same {@link SparseAliasingCFG} built by the backward query */
+  SparseAliasingCFG getSparseCFGForForwardPropagation(SootMethod m, String type);
 
   /**
    * For building the {@link SparseAliasingCFG} for the first time for a backward query.
