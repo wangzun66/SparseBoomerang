@@ -26,15 +26,9 @@ public class StaticCFG implements ObservableControlFlowGraph {
 
   private BoomerangOptions options;
 
-  private Val currentVal;
-
   private SparseAliasingCFG currentSCFG = null;
   private String currMethodSig = "";
   private String initialQueryVarType;
-
-  public void setCurrentVal(Val val) {
-    this.currentVal = val;
-  }
 
   public void setInitialQueryVarType(String type) {
     this.initialQueryVarType = type;
@@ -59,9 +53,12 @@ public class StaticCFG implements ObservableControlFlowGraph {
     if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
       String methodSig = SootAdapter.asSootMethod(method).getSignature();
       Stmt currStmt = SootAdapter.asStmt(curr);
-      if (methodSig.equals(currMethodSig)) {
-      } else {
+      if (!methodSig.equals(currMethodSig)) {
+        currMethodSig = methodSig;
         SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
+        if(sparseCFG == null){
+          sparseCFG = getSparseCFG(method, initialQueryVarType);
+        }
         currentSCFG = sparseCFG;
       }
       if (currentSCFG != null && currentSCFG.getGraph().nodes().contains(currStmt)) {
@@ -90,22 +87,15 @@ public class StaticCFG implements ObservableControlFlowGraph {
     }
   }
 
-  /**
-   * It is not possible take an aas-scfg in global cache for forward propagation, because the first
-   * encountered stmt must be not the stmt which is used for building the aas-scfg for the current
-   * resolving query. Therefore, we only retrieve aas-scfgs from solver cache
-   */
-  @Deprecated
   private SparseAliasingCFG getSparseCFG(
-      Method method, Statement stmt, Val currentVal, String initialQueryVarType) {
+      Method method, String initialQueryVarType) {
     SootMethod sootMethod = ((JimpleMethod) method).getDelegate();
-    Stmt sootStmt = ((JimpleStatement) stmt).getDelegate();
     SparseCFGCache sparseCFGCache =
         SparseCFGCache.getInstance(
             sparsificationStrategy, options.ignoreSparsificationAfterQuery());
     SparseAliasingCFG sparseCFG =
         sparseCFGCache.getSparseCFGForForwardPropagation(
-            sootMethod, sootStmt, currentVal, initialQueryVarType);
+            sootMethod, initialQueryVarType);
     return sparseCFG;
   }
 

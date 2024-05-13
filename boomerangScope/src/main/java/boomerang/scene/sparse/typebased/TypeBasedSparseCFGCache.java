@@ -38,8 +38,8 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     this.sparseCFGBuilder = sparseCFGBuilder;
   }
 
-  public synchronized SparseAliasingCFG getSparseCFGForForwardPropagation(
-      SootMethod m, Stmt stmt, Val val, String initialQueryType) {
+  public SparseAliasingCFG getSparseCFGForForwardPropagation(
+      SootMethod m, String initialQueryType) {
     String key = m.getSignature();
     if (cache.containsKey(key)) {
       Map<String, SparseAliasingCFG> scfgMap = cache.get(key);

@@ -45,10 +45,8 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
    * encountered stmt must be not the stmt which is used for building the aas-scfg. Therefore, we
    * only retrieve aas-scfgs from solver cache.
    */
-  @Deprecated
   public SparseAliasingCFG getSparseCFGForForwardPropagation(
-      SootMethod m, Stmt stmt, Val val, String initialQueryVarType) {
-
+      SootMethod m, String initialQueryVarType) {
     SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false, SparseCFGQueryLog.QueryDirection.FWD);
     logList.add(queryLog);
     return null;

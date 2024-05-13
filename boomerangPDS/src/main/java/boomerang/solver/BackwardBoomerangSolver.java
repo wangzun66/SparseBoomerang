@@ -212,8 +212,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
      * scfg for the method from global cache for whole apk and update in solver-cache don't forget
      * update scfg and methodsig in local
      */
-    if (methodSig.equals(currMethodSig)) {
-    } else {
+    if (!methodSig.equals(currMethodSig)) {
       this.currMethodSig = methodSig;
       SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
       if (sparseCFG == null) {

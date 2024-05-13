@@ -404,7 +404,6 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
       returnFlow(method, node);
       return;
     }
-    ((StaticCFG) cfg).setCurrentVal(value);
     cfg.addSuccsOfListener(
         new ForwardSolverSuccessorListener(curr, query, value, method, node, LOGGER, this));
   }

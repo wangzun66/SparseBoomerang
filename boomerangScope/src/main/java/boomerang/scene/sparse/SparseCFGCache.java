@@ -31,13 +31,9 @@ public interface SparseCFGCache {
 
   /**
    * For retrieving the same {@link SparseAliasingCFG} built by the backward query
-   *
-   * @param m
-   * @param stmt
-   * @return
    */
   SparseAliasingCFG getSparseCFGForForwardPropagation(
-      SootMethod m, Stmt stmt, Val val, String type);
+      SootMethod m, String type);
 
   /**
    * For building the {@link SparseAliasingCFG} for the first time for a backward query.
