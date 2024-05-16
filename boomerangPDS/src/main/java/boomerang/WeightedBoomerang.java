@@ -21,6 +21,9 @@ import boomerang.controlflowgraph.ObservableControlFlowGraph;
 import boomerang.controlflowgraph.PredecessorListener;
 import boomerang.controlflowgraph.StaticCFG;
 import boomerang.controlflowgraph.SuccessorListener;
+import boomerang.datacollection.DataCollection;
+import boomerang.datacollection.MethodLog;
+import boomerang.datacollection.QueryLog;
 import boomerang.debugger.Debugger;
 import boomerang.poi.AbstractPOI;
 import boomerang.poi.CopyAccessPathChain;
@@ -43,6 +46,7 @@ import boomerang.scene.Val;
 import boomerang.scene.jimple.JimpleField;
 import boomerang.scene.jimple.JimpleMethod;
 import boomerang.scene.jimple.JimpleStaticFieldVal;
+import boomerang.scene.sparse.SootAdapter;
 import boomerang.solver.AbstractBoomerangSolver;
 import boomerang.solver.BackwardBoomerangSolver;
 import boomerang.solver.ControlFlowEdgeBasedFieldTransitionListener;
@@ -986,7 +990,19 @@ public abstract class WeightedBoomerang<W extends Weight> {
     try {
       queryGraph.addRoot(query);
       LOGGER.trace("Starting backward analysis of: {}", query);
+      LOGGER.info("\n\n {}", query.getInfo());
+      SootMethod sm = SootAdapter.asSootMethod(query.cfgEdge().getMethod());
+      QueryLog queryLog = DataCollection.getInstance().getQueryLog(query);
+      queryLog.setCurrentMethodSig(sm.getSignature());
+      MethodLog ml = new MethodLog(sm);
+      queryLog.setCurrentMethodLog(ml);
+      queryLog.addLog(ml);
+      LOGGER.info(ml.toString());
+      ml.logStart();
       backwardSolve(query);
+      ml = DataCollection.getInstance().getQueryLog(query).getCurrentMethodLog();
+      ml.logEnd();
+      LOGGER.info(ml.toString());
     } catch (BoomerangTimeoutException e) {
       timedout = true;
       LOGGER.trace("Timeout ({}) of query: {} ", analysisWatch, query);

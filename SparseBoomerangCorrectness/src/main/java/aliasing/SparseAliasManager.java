@@ -3,18 +3,17 @@ package aliasing;
 import boomerang.BackwardQuery;
 import boomerang.Boomerang;
 import boomerang.DefaultBoomerangOptions;
+import boomerang.datacollection.DataCollection;
+import boomerang.datacollection.MethodLog;
+import boomerang.datacollection.QueryLog;
 import boomerang.results.BackwardBoomerangResults;
 import boomerang.scene.*;
 import boomerang.scene.jimple.*;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.util.AccessPath;
 import com.google.common.base.Stopwatch;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import java.time.Duration;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.*;
@@ -36,13 +35,21 @@ public class SparseAliasManager {
 
   private boolean ignoreAfterQuery;
 
+  private int queryCount = 0;
+  private DataCollection dataCollection;
+  private Map<Integer, BackwardQuery> id2Query = new HashMap<>();
+  private Map<Integer, Long> id2PDSBuildingTime = new HashMap();
+  private Map<Integer, Long> id2AliasSearchingTime = new HashMap();
+  private Map<Integer, Long> id2QueryTime = new HashMap();
+  private static Duration totalAliasingDuration;
+
   static class BoomerangOptions extends DefaultBoomerangOptions {
 
     private SparseCFGCache.SparsificationStrategy sparsificationStrategy;
     private boolean ignoreAfterQuery;
 
     public BoomerangOptions(
-            SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
+        SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
       this.sparsificationStrategy = sparsificationStrategy;
       this.ignoreAfterQuery = ignoreAfterQuery;
     }
@@ -91,15 +98,14 @@ public class SparseAliasManager {
     }
   }
 
-  private static Duration totalAliasingDuration;
-
   private SparseAliasManager(
-          SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
+      SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
     this.sparsificationStrategy = sparsificationStrategy;
     this.ignoreAfterQuery = ignoreAfterQuery;
     totalAliasingDuration = Duration.ZERO;
     sootCallGraph = new SootCallGraph();
     dataFlowScope = SootDataFlowScope.make(Scene.v());
+    dataCollection = DataCollection.getInstance();
   }
 
   public static Duration getTotalDuration() {
@@ -107,10 +113,10 @@ public class SparseAliasManager {
   }
 
   public static synchronized SparseAliasManager getInstance(
-          SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
+      SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
     if (INSTANCE == null
-            || INSTANCE.sparsificationStrategy != sparsificationStrategy
-            || INSTANCE.ignoreAfterQuery != ignoreAfterQuery) {
+        || INSTANCE.sparsificationStrategy != sparsificationStrategy
+        || INSTANCE.ignoreAfterQuery != ignoreAfterQuery) {
       INSTANCE = new SparseAliasManager(sparsificationStrategy, ignoreAfterQuery);
     }
     return INSTANCE;
@@ -127,7 +133,9 @@ public class SparseAliasManager {
     BackwardQuery query = createQuery(stmt, method, value);
     Set<AccessPath> aliases = getAliases(query);
     Duration elapsed = stopwatch.elapsed();
+    this.id2QueryTime.put(queryCount - 1, elapsed.toNanos());
     totalAliasingDuration = totalAliasingDuration.plus(elapsed);
+    resultsPrinter();
     return aliases;
   }
 
@@ -136,7 +144,7 @@ public class SparseAliasManager {
     Statement statement = JimpleStatement.create(stmt, jimpleMethod);
     JimpleVal val = new JimpleVal(value, jimpleMethod);
     Optional<Statement> first =
-            statement.getMethod().getControlFlowGraph().getSuccsOf(statement).stream().findFirst();
+        statement.getMethod().getControlFlowGraph().getSuccsOf(statement).stream().findFirst();
     if (first.isPresent()) {
       return BackwardQuery.make(new ControlFlowGraph.Edge(statement, first.get()), val);
     }
@@ -144,12 +152,51 @@ public class SparseAliasManager {
   }
 
   private Set<AccessPath> getAliases(BackwardQuery query) {
+    countQuery(query);
     boomerangSolver =
-            new Boomerang(
-                    sootCallGraph, dataFlowScope, new BoomerangOptions(
-                    INSTANCE.sparsificationStrategy, INSTANCE.ignoreAfterQuery));
-    BackwardBoomerangResults<Weight.NoWeight> results =
-            boomerangSolver.solve(query);
-    return results.getAllAliases();
+        new Boomerang(
+            sootCallGraph,
+            dataFlowScope,
+            new BoomerangOptions(INSTANCE.sparsificationStrategy, INSTANCE.ignoreAfterQuery));
+
+    // record PDS building time
+    Stopwatch stopwatch = Stopwatch.createUnstarted();
+    stopwatch.start();
+    BackwardBoomerangResults<Weight.NoWeight> results = boomerangSolver.solve(query);
+    stopwatch.stop();
+    Duration elapsed = stopwatch.elapsed();
+    this.id2PDSBuildingTime.put(queryCount - 1, elapsed.toNanos());
+
+    // record aliases searching time on PDS
+    stopwatch.start();
+    Set<AccessPath> aliases = results.getAllAliases();
+    stopwatch.stop();
+    elapsed = stopwatch.elapsed();
+    this.id2AliasSearchingTime.put(queryCount - 1, elapsed.toNanos());
+
+    return aliases;
+  }
+
+  private void countQuery(BackwardQuery query) {
+    this.id2Query.put(queryCount, query);
+    dataCollection.registerQuery(query);
+    queryCount++;
+  }
+
+  private void resultsPrinter() {
+    for (int i = 0; i < queryCount; i++) {
+      BackwardQuery query = this.id2Query.get(i);
+      LOGGER.info(query.getInfo());
+      LOGGER.info(
+          "QueryTime: {}  PDSBuildingTime: {}  AliasSearchingTime: {}",
+          this.id2QueryTime.get(i),
+          this.id2PDSBuildingTime.get(i),
+          this.id2AliasSearchingTime.get(i));
+      QueryLog queryLog = dataCollection.getQueryLog(query);
+      for (MethodLog methodLog : queryLog.getLogList()) {
+        LOGGER.info(methodLog.toString());
+      }
+    }
+    LOGGER.info("Running Time: {}", totalAliasingDuration.toMillis());
   }
 }

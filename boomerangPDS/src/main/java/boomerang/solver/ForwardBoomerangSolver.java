@@ -18,6 +18,9 @@ import boomerang.Query;
 import boomerang.callgraph.CalleeListener;
 import boomerang.callgraph.ObservableICFG;
 import boomerang.controlflowgraph.*;
+import boomerang.datacollection.DataCollection;
+import boomerang.datacollection.MethodLog;
+import boomerang.datacollection.QueryLog;
 import boomerang.flowfunction.IForwardFlowFunction;
 import boomerang.scene.AllocVal;
 import boomerang.scene.ControlFlowGraph;
@@ -29,6 +32,7 @@ import boomerang.scene.Method;
 import boomerang.scene.Statement;
 import boomerang.scene.Type;
 import boomerang.scene.Val;
+import boomerang.scene.sparse.SootAdapter;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import java.util.Collection;
@@ -38,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.LoggerFactory;
+import soot.SootMethod;
 import sync.pds.solver.nodes.GeneratedState;
 import sync.pds.solver.nodes.INode;
 import sync.pds.solver.nodes.Node;
@@ -56,8 +61,8 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
   private static final org.slf4j.Logger LOGGER =
       LoggerFactory.getLogger(ForwardBoomerangSolver.class);
   private final ForwardQuery query;
-  private final BackwardQuery mainQuery;
   private final IForwardFlowFunction flowFunctions;
+  QueryLog queryLog;
 
   public ForwardBoomerangSolver(
       ObservableICFG<Statement, Method> callGraph,
@@ -75,9 +80,9 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
       Type propagationType) {
     super(callGraph, cfg, genField, options, callSummaries, fieldSummaries, scope, propagationType);
     this.query = query;
-    this.mainQuery = mainQuery;
     this.flowFunctions = flowFunctions;
     this.flowFunctions.setSolver(this, fieldLoadStatements, fieldStoreStatements);
+    queryLog = DataCollection.getInstance().getQueryLog(mainQuery);
     ((StaticCFG) cfg).setInitialQueryVarType(mainQuery.var().getType().toString());
   }
 
@@ -400,6 +405,20 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
     if (dataFlowScope.isExcluded(method)) {
       return;
     }
+    // collect data
+    SootMethod sootMethod = SootAdapter.asSootMethod(method);
+    if (!sootMethod.getSignature().equals(queryLog.getCurrentMethodSig())) {
+      queryLog.setCurrentMethodSig(sootMethod.getSignature());
+      MethodLog methodLog = queryLog.getCurrentMethodLog();
+      methodLog.logEnd();
+      LOGGER.info(methodLog.toString());
+      MethodLog ml = new MethodLog(sootMethod);
+      queryLog.setCurrentMethodLog(ml);
+      queryLog.addLog(ml);
+      LOGGER.info(ml.toString());
+      ml.logStart();
+    }
+
     if (icfg.isExitStmt(curr.getTarget())) {
       returnFlow(method, node);
       return;

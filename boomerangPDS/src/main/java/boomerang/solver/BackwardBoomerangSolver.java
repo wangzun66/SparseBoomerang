@@ -18,6 +18,9 @@ import boomerang.callgraph.ObservableICFG;
 import boomerang.controlflowgraph.ObservableControlFlowGraph;
 import boomerang.controlflowgraph.PredecessorListener;
 import boomerang.controlflowgraph.SuccessorListener;
+import boomerang.datacollection.DataCollection;
+import boomerang.datacollection.MethodLog;
+import boomerang.datacollection.QueryLog;
 import boomerang.flowfunction.IBackwardFlowFunction;
 import boomerang.scene.AllocVal;
 import boomerang.scene.ControlFlowGraph;
@@ -43,6 +46,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import soot.SootMethod;
 import soot.Unit;
 import soot.jimple.Stmt;
 import sync.pds.solver.nodes.GeneratedState;
@@ -63,6 +67,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
   private final IBackwardFlowFunction flowFunction;
   private SparseAliasingCFG currentSCFG = null;
   private String currMethodSig = "";
+  QueryLog queryLog;
 
   public BackwardBoomerangSolver(
       ObservableICFG<Statement, Method> icfg,
@@ -85,6 +90,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     this.flowFunction = backwardFlowFunction;
     this.flowFunction.setSolver(this, fieldLoadStatements, fieldStoreStatements);
     BackwardBoomerangSolverCache.getInstance().reset();
+    queryLog = DataCollection.getInstance().getQueryLog(query);
   }
 
   private boolean notUsedInMethod(Method m, Statement curr, Val value) {
@@ -163,6 +169,19 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (dataFlowScope.isExcluded(method)) return;
     if (notUsedInMethod(method, edge.getStart(), value)) {
       return;
+    }
+    // collect data
+    SootMethod sootMethod = SootAdapter.asSootMethod(method);
+    if (!sootMethod.getSignature().equals(queryLog.getCurrentMethodSig())) {
+      MethodLog methodLog = queryLog.getCurrentMethodLog();
+      methodLog.logEnd();
+      LOGGER.info(methodLog.toString());
+      queryLog.setCurrentMethodSig(sootMethod.getSignature());
+      MethodLog ml = new MethodLog(sootMethod);
+      queryLog.setCurrentMethodLog(ml);
+      queryLog.addLog(ml);
+      LOGGER.info(ml.toString());
+      ml.logStart();
     }
     if (edge.getStart().containsInvokeExpr()
         && edge.getStart().uses(value)
