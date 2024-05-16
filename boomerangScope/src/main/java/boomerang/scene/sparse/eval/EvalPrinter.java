@@ -20,7 +20,7 @@ public class EvalPrinter {
    * @param cache
    */
   public void printCachePerformance(SparseCFGCache cache) {
-    List<SparseCFGQueryLog> queryLogs = cache.getQueryLogs();
+    List<SparseCFGQueryLog> queryLogs = cache.getSCFGLogs();
     try (FileWriter writer = new FileWriter(evalName + "-" + "sparseCFGCache.csv")) {
       long count = 0;
       for (SparseCFGQueryLog queryLog : queryLogs) {
@@ -31,7 +31,7 @@ public class EvalPrinter {
         str.append(",");
         str.append(queryLog.getDirection());
         str.append(",");
-        str.append(queryLog.getDuration().toMillis());
+        //str.append(queryLog.getDuration().toMillis());
         str.append(System.lineSeparator());
         writer.write(str.toString());
       }

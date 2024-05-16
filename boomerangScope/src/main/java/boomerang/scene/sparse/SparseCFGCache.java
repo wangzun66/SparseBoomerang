@@ -48,5 +48,6 @@ public interface SparseCFGCache {
       Val currentVal,
       Statement currentStmt);
 
-  List<SparseCFGQueryLog> getQueryLogs();
+  List<SparseCFGQueryLog> getSCFGLogs();
+  void resetSCFGLogs();
 }

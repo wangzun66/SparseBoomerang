@@ -1000,7 +1000,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
       LOGGER.info(ml.toString());
       ml.logStart();
       backwardSolve(query);
-      ml = DataCollection.getInstance().getQueryLog(query).getCurrentMethodLog();
+      ml = queryLog.getCurrentMethodLog();
       ml.logEnd();
       LOGGER.info(ml.toString());
     } catch (BoomerangTimeoutException e) {

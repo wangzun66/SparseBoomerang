@@ -1,6 +1,8 @@
 package boomerang.datacollection;
 
 import boomerang.BackwardQuery;
+import boomerang.scene.sparse.eval.SparseCFGQueryLog;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,8 @@ public class QueryLog {
   private BackwardQuery query;
 
   private List<MethodLog> logs = new ArrayList<>();
+
+  private List<SparseCFGQueryLog> scfgLogs = new ArrayList<>();
 
   private String currentMethodSig = "";
 
@@ -45,5 +49,13 @@ public class QueryLog {
 
   public List<MethodLog> getLogList() {
     return this.logs;
+  }
+
+  public List<SparseCFGQueryLog> getSCFGLogList(){
+    return scfgLogs;
+  }
+
+  public void storeSCFGLogList(List<SparseCFGQueryLog> list){
+    this.scfgLogs = list;
   }
 }

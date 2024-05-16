@@ -23,9 +23,10 @@ public class DataCollection {
     query2Logs = new HashMap<>();
   }
 
-  public void registerQuery(BackwardQuery query) {
+  public QueryLog registerQuery(BackwardQuery query) {
     QueryLog queryLog = new QueryLog(query);
     query2Logs.put(query, queryLog);
+    return queryLog;
   }
 
   @Nullable

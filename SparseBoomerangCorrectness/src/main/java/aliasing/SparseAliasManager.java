@@ -152,7 +152,7 @@ public class SparseAliasManager {
   }
 
   private Set<AccessPath> getAliases(BackwardQuery query) {
-    countQuery(query);
+    QueryLog queryLog = countQuery(query);
     boomerangSolver =
         new Boomerang(
             sootCallGraph,
@@ -173,14 +173,18 @@ public class SparseAliasManager {
     stopwatch.stop();
     elapsed = stopwatch.elapsed();
     this.id2AliasSearchingTime.put(queryCount - 1, elapsed.toNanos());
-
+    if(sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE){
+      queryLog.storeSCFGLogList(SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).getSCFGLogs());
+      SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).resetSCFGLogs();
+    }
     return aliases;
   }
 
-  private void countQuery(BackwardQuery query) {
+  private QueryLog countQuery(BackwardQuery query) {
     this.id2Query.put(queryCount, query);
-    dataCollection.registerQuery(query);
+    QueryLog queryLog = dataCollection.registerQuery(query);
     queryCount++;
+    return queryLog;
   }
 
   private void resultsPrinter() {
