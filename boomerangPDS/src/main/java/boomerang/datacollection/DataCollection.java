@@ -10,7 +10,8 @@ public class DataCollection {
 
   private static DataCollection INSTANCE;
 
-  private Map<BackwardQuery, QueryLog> query2Logs;
+  // private Map<BackwardQuery, QueryLog> query2Logs;
+  private Map<Integer, QueryLog> queryId2Logs;
 
   public static DataCollection getInstance() {
     if (INSTANCE == null) {
@@ -20,19 +21,20 @@ public class DataCollection {
   }
 
   private DataCollection() {
-    query2Logs = new HashMap<>();
+    queryId2Logs = new HashMap<>();
   }
 
-  public QueryLog registerQuery(BackwardQuery query) {
+  public QueryLog registerQuery(int id, BackwardQuery query) {
     QueryLog queryLog = new QueryLog(query);
-    query2Logs.put(query, queryLog);
+    query.setId(id);
+    queryId2Logs.put(id, queryLog);
     return queryLog;
   }
 
   @Nullable
-  public QueryLog getQueryLog(BackwardQuery query) {
-    if (query2Logs.containsKey(query)) {
-      return this.query2Logs.get(query);
+  public QueryLog getQueryLog(int id) {
+    if (queryId2Logs.containsKey(id)) {
+      return this.queryId2Logs.get(id);
     }
     return null;
   }

@@ -183,7 +183,7 @@ public class SparseAliasManager {
 
   private QueryLog countQuery(BackwardQuery query) {
     this.id2Query.put(queryCount, query);
-    QueryLog queryLog = dataCollection.registerQuery(query);
+    QueryLog queryLog = dataCollection.registerQuery(queryCount, query);
     queryCount++;
     return queryLog;
   }
@@ -197,7 +197,7 @@ public class SparseAliasManager {
           this.id2QueryTime.get(i),
           this.id2PDSBuildingTime.get(i),
           this.id2AliasSearchingTime.get(i));
-      QueryLog queryLog = dataCollection.getQueryLog(query);
+      QueryLog queryLog = dataCollection.getQueryLog(i);
       for (MethodLog methodLog : queryLog.getLogList()) {
         LOGGER.info(methodLog.toString());
       }

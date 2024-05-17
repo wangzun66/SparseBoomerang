@@ -82,7 +82,7 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
     this.query = query;
     this.flowFunctions = flowFunctions;
     this.flowFunctions.setSolver(this, fieldLoadStatements, fieldStoreStatements);
-    queryLog = DataCollection.getInstance().getQueryLog(mainQuery);
+    queryLog = DataCollection.getInstance().getQueryLog(mainQuery.getId());
     ((StaticCFG) cfg).setInitialQueryVarType(mainQuery.var().getType().toString());
   }
 

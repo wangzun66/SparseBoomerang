@@ -90,7 +90,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     this.flowFunction = backwardFlowFunction;
     this.flowFunction.setSolver(this, fieldLoadStatements, fieldStoreStatements);
     BackwardBoomerangSolverCache.getInstance().reset();
-    queryLog = DataCollection.getInstance().getQueryLog(query);
+    queryLog = DataCollection.getInstance().getQueryLog(query.getId());
   }
 
   private boolean notUsedInMethod(Method m, Statement curr, Val value) {

@@ -16,6 +16,9 @@ import boomerang.scene.ControlFlowGraph.Edge;
 import boomerang.scene.Val;
 
 public class BackwardQuery extends Query {
+
+  private int id; // field only for data collection
+
   protected BackwardQuery(ControlFlowGraph.Edge edge, Val variable) {
     super(edge, variable);
   }
@@ -36,6 +39,14 @@ public class BackwardQuery extends Query {
     builder.append(cfgEdge().getMethod().toString());
     builder.append(")");
     return builder.toString();
+  }
+
+  public void setId(int id) {
+    this.id = id;
+  }
+
+  public int getId() {
+    return id;
   }
 
   public static BackwardQuery make(Edge edge, Val variable) {

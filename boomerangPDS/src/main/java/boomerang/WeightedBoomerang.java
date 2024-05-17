@@ -992,7 +992,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
       LOGGER.trace("Starting backward analysis of: {}", query);
       LOGGER.info("\n\n {}", query.getInfo());
       SootMethod sm = SootAdapter.asSootMethod(query.cfgEdge().getMethod());
-      QueryLog queryLog = DataCollection.getInstance().getQueryLog(query);
+      QueryLog queryLog = DataCollection.getInstance().getQueryLog(query.getId());
       queryLog.setCurrentMethodSig(sm.getSignature());
       MethodLog ml = new MethodLog(sm);
       queryLog.setCurrentMethodLog(ml);
