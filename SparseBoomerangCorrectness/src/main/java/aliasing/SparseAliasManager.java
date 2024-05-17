@@ -173,8 +173,9 @@ public class SparseAliasManager {
     stopwatch.stop();
     elapsed = stopwatch.elapsed();
     this.id2AliasSearchingTime.put(queryCount - 1, elapsed.toNanos());
-    if(sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE){
-      queryLog.storeSCFGLogList(SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).getSCFGLogs());
+    if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
+      queryLog.storeSCFGLogList(
+          SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).getSCFGLogs());
       SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).resetSCFGLogs();
     }
     return aliases;

@@ -2,7 +2,6 @@ package boomerang.datacollection;
 
 import boomerang.BackwardQuery;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,11 +50,11 @@ public class QueryLog {
     return this.logs;
   }
 
-  public List<SparseCFGQueryLog> getSCFGLogList(){
+  public List<SparseCFGQueryLog> getSCFGLogList() {
     return scfgLogs;
   }
 
-  public void storeSCFGLogList(List<SparseCFGQueryLog> list){
+  public void storeSCFGLogList(List<SparseCFGQueryLog> list) {
     this.scfgLogs = list;
   }
 }

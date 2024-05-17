@@ -1,12 +1,9 @@
 package boomerang.scene.sparse.eval;
 
-import com.google.common.base.Stopwatch;
+import javax.annotation.Nullable;
 import soot.SootMethod;
 import soot.Value;
 import soot.jimple.Stmt;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
 
 /**
  * For logging if a SparseCFG was retrieved from cache, or it was built for the first time. And how
@@ -31,7 +28,6 @@ public class SparseCFGQueryLog {
   private int initialStmtCount = 0;
   private int finalStmtCount = 0;
 
-
   private Stmt stmt = null;
   private Value value = null;
   private SootMethod method;
@@ -55,23 +51,23 @@ public class SparseCFGQueryLog {
   public SparseCFGQueryLog(boolean retrievedFromCache, SootMethod method, Value value, Stmt stmt) {
     this.retrievedFromCache = retrievedFromCache;
     this.method = method;
-    if(!retrievedFromCache){
+    if (!retrievedFromCache) {
       this.stmt = stmt;
       this.value = value;
     }
   }
 
   @Nullable
-  public Value getValue(){
+  public Value getValue() {
     return this.value;
   }
 
   @Nullable
-  public Stmt getStmt(){
+  public Stmt getStmt() {
     return this.stmt;
   }
 
-  public SootMethod getMethod(){
+  public SootMethod getMethod() {
     return this.method;
   }
 
@@ -125,22 +121,22 @@ public class SparseCFGQueryLog {
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("SCFG method: ");
     sb.append(method.getSubSignature());
     sb.append(" is ");
-    if(retrievedFromCache){
+    if (retrievedFromCache) {
       sb.append("retrieved ");
-    }else {
+    } else {
       sb.append("built ");
     }
-    if(stmt != null){
+    if (stmt != null) {
       sb.append("at stmt: ");
       sb.append(stmt);
       sb.append(", ");
     }
-    if(value != null){
+    if (value != null) {
       sb.append("with value: ");
       sb.append(value);
     }
