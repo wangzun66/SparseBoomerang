@@ -7,10 +7,7 @@ import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.SootMethod;
@@ -129,5 +126,20 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
   @Override
   public void resetSCFGLogs() {
     this.logList = new ArrayList<>();
+  }
+
+  @Override
+  public Map<String, Map<String, Set<SparseAliasingCFG>>> getCache() {
+    Map<String, Map<String, Set<SparseAliasingCFG>>> result = new HashMap<>();
+    for (String ms : cache.keySet()) {
+      result.put(ms, new HashMap<>());
+      Map<String, Set<SparseAliasingCFG>> type2Scfgs = result.get(ms);
+      for (String type : cache.get(ms).keySet()) {
+        Set<SparseAliasingCFG> scfg = new HashSet<>();
+        scfg.add(cache.get(ms).get(type));
+        type2Scfgs.put(type, scfg);
+      }
+    }
+    return result;
   }
 }

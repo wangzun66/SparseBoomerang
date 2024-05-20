@@ -7,6 +7,8 @@ import boomerang.scene.sparse.aliasaware.AliasAwareSparseCFGCache;
 import boomerang.scene.sparse.eval.SparseCFGQueryLog;
 import boomerang.scene.sparse.typebased.TypeBasedSparseCFGCache;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import soot.SootMethod;
 
 public interface SparseCFGCache {
@@ -51,4 +53,6 @@ public interface SparseCFGCache {
   List<SparseCFGQueryLog> getSCFGLogs();
 
   void resetSCFGLogs();
+
+  Map<String, Map<String, Set<SparseAliasingCFG>>> getCache();
 }

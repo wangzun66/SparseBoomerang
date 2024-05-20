@@ -132,4 +132,9 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
   public void resetSCFGLogs() {
     this.logList = new ArrayList<>();
   }
+
+  @Override
+  public Map<String, Map<String, Set<SparseAliasingCFG>>> getCache() {
+    return this.cache;
+  }
 }
