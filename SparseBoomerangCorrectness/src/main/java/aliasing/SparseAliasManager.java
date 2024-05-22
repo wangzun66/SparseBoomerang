@@ -135,7 +135,7 @@ public class SparseAliasManager {
     Duration elapsed = stopwatch.elapsed();
     this.id2QueryTime.put(queryCount - 1, elapsed.toNanos());
     totalAliasingDuration = totalAliasingDuration.plus(elapsed);
-    resultsPrinter();
+    //resultsPrinter();
     return aliases;
   }
 

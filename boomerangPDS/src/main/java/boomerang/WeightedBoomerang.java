@@ -990,19 +990,16 @@ public abstract class WeightedBoomerang<W extends Weight> {
     try {
       queryGraph.addRoot(query);
       LOGGER.trace("Starting backward analysis of: {}", query);
-      LOGGER.info("\n\n {}", query.getInfo());
       SootMethod sm = SootAdapter.asSootMethod(query.cfgEdge().getMethod());
       QueryLog queryLog = DataCollection.getInstance().getQueryLog(query.getId());
       queryLog.setCurrentMethodSig(sm.getSignature());
       MethodLog ml = new MethodLog(sm);
       queryLog.setCurrentMethodLog(ml);
       queryLog.addLog(ml);
-      LOGGER.info(ml.toString());
       ml.logStart();
       backwardSolve(query);
       ml = queryLog.getCurrentMethodLog();
       ml.logEnd();
-      LOGGER.info(ml.toString());
     } catch (BoomerangTimeoutException e) {
       timedout = true;
       LOGGER.trace("Timeout ({}) of query: {} ", analysisWatch, query);

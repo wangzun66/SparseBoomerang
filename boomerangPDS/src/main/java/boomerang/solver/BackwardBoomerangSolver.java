@@ -175,12 +175,10 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (!sootMethod.getSignature().equals(queryLog.getCurrentMethodSig())) {
       MethodLog methodLog = queryLog.getCurrentMethodLog();
       methodLog.logEnd();
-      LOGGER.info(methodLog.toString());
       queryLog.setCurrentMethodSig(sootMethod.getSignature());
       MethodLog ml = new MethodLog(sootMethod);
       queryLog.setCurrentMethodLog(ml);
       queryLog.addLog(ml);
-      LOGGER.info(ml.toString());
       ml.logStart();
     }
     if (edge.getStart().containsInvokeExpr()

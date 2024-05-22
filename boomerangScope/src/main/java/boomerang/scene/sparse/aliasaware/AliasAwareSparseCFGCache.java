@@ -74,7 +74,6 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
             // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
             // SparseCFGQueryLog.QueryDirection.BWD);
             SparseCFGQueryLog scfgLog = new SparseCFGQueryLog(true, sootCurrentMethod, null, null);
-            LOGGER.info(scfgLog.toString());
             logList.add(scfgLog);
             return scfg;
           }
@@ -98,7 +97,6 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt, scfgLog);
-    LOGGER.info(scfgLog.toString());
     // queryLog.logEnd();
     logList.add(scfgLog);
     put(sootCurrentMethod.getSignature(), sootCurrentStmt.toString(), scfg);
