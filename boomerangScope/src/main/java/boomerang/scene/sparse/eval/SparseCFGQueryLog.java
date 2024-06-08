@@ -31,6 +31,7 @@ public class SparseCFGQueryLog {
   private Stmt stmt = null;
   private Value value = null;
   private SootMethod method;
+  private String scfg;
 
   /*public SparseCFGQueryLog(boolean retrievedFromCache, QueryDirection direction) {
     this.retrievedFromCache = retrievedFromCache;
@@ -48,13 +49,17 @@ public class SparseCFGQueryLog {
     }
   }*/
 
-  public SparseCFGQueryLog(boolean retrievedFromCache, SootMethod method, Value value, Stmt stmt) {
+  public SparseCFGQueryLog(
+      boolean retrievedFromCache, SootMethod method, Value value, Stmt stmt, String scfg) {
     this.retrievedFromCache = retrievedFromCache;
     this.method = method;
-    if (!retrievedFromCache) {
+    this.stmt = stmt;
+    this.value = value;
+    this.scfg = scfg;
+    /*if (!retrievedFromCache) {
       this.stmt = stmt;
       this.value = value;
-    }
+    }*/
   }
 
   @Nullable
@@ -69,6 +74,14 @@ public class SparseCFGQueryLog {
 
   public SootMethod getMethod() {
     return this.method;
+  }
+
+  public String getScfg() {
+    return this.scfg;
+  }
+
+  public void setScfg(String scfg) {
+    this.scfg = scfg;
   }
 
   /*public void logStart() {

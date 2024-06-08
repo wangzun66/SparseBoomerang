@@ -73,7 +73,8 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
           if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
             // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
             // SparseCFGQueryLog.QueryDirection.BWD);
-            SparseCFGQueryLog scfgLog = new SparseCFGQueryLog(true, sootCurrentMethod, null, null);
+            SparseCFGQueryLog scfgLog =
+                new SparseCFGQueryLog(true, sootCurrentMethod, null, null, scfg.toString());
             logList.add(scfgLog);
             return scfg;
           }
@@ -92,12 +93,13 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
     // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false,
     // SparseCFGQueryLog.QueryDirection.BWD);
     SparseCFGQueryLog scfgLog =
-        new SparseCFGQueryLog(false, sootCurrentMethod, null, sootCurrentStmt);
+        new SparseCFGQueryLog(false, sootCurrentMethod, null, sootCurrentStmt, null);
     // queryLog.logStart();
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt, scfgLog);
     // queryLog.logEnd();
+    scfgLog.setScfg(scfg.toString());
     logList.add(scfgLog);
     put(sootCurrentMethod.getSignature(), sootCurrentStmt.toString(), scfg);
     return scfg;

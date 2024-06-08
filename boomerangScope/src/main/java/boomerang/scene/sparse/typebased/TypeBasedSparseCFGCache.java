@@ -44,7 +44,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
         SparseAliasingCFG scfg = scfgMap.get(initialQueryType);
         // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
         // SparseCFGQueryLog.QueryDirection.FWD);
-        SparseCFGQueryLog scfgLog = new SparseCFGQueryLog(true, m, null, null);
+        SparseCFGQueryLog scfgLog = new SparseCFGQueryLog(true, m, null, null, scfg.toString());
         logList.add(scfgLog);
         return scfg;
       }
@@ -74,7 +74,8 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
         SparseAliasingCFG scfg = scfgMap.get(typeKey);
         // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
         // SparseCFGQueryLog.QueryDirection.BWD);
-        SparseCFGQueryLog scfgLog = new SparseCFGQueryLog(true, sootCurrentMethod, null, null);
+        SparseCFGQueryLog scfgLog =
+            new SparseCFGQueryLog(true, sootCurrentMethod, null, null, scfg.toString());
         logList.add(scfgLog);
         return scfg;
       } else {
@@ -94,11 +95,13 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
     // SparseCFGQueryLog.QueryDirection.BWD);
     // queryLog.logStart();
     SparseCFGQueryLog scfgLog =
-        new SparseCFGQueryLog(false, sootCurrentMethod, SootAdapter.asValue(initialQueryVal), null);
+        new SparseCFGQueryLog(
+            false, sootCurrentMethod, SootAdapter.asValue(initialQueryVal), null, null);
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, sootCurrentStmt, scfgLog);
     // queryLog.logEnd();
+    scfgLog.setScfg(scfg.toString());
     logList.add(scfgLog);
     put(sootCurrentMethod.getSignature(), initialQueryVarType, scfg);
     return scfg;
