@@ -4,25 +4,27 @@ import boomerang.scene.sparse.SparseAliasingCFG;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
+
+import boomerang.scene.sparse.SparseCFG;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BackwardBoomerangSolverCache {
+public class SCFGSolverCache {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BackwardBoomerangSolverCache.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(SCFGSolverCache.class);
 
-  Map<String, SparseAliasingCFG> cache;
+  Map<String, SparseCFG> cache;
 
-  private static BackwardBoomerangSolverCache INSTANCE;
+  private static SCFGSolverCache INSTANCE;
 
-  public static BackwardBoomerangSolverCache getInstance() {
+  public static SCFGSolverCache getInstance() {
     if (INSTANCE == null) {
-      INSTANCE = new BackwardBoomerangSolverCache();
+      INSTANCE = new SCFGSolverCache();
     }
     return INSTANCE;
   }
 
-  private BackwardBoomerangSolverCache() {
+  private SCFGSolverCache() {
     cache = new HashMap<>();
   }
 
@@ -31,14 +33,14 @@ public class BackwardBoomerangSolverCache {
   }
 
   @Nullable
-  public SparseAliasingCFG get(String methodSig) {
+  public SparseCFG get(String methodSig) {
     if (cache.containsKey(methodSig)) {
       return cache.get(methodSig);
     }
     return null;
   }
 
-  public void put(String methodSig, SparseAliasingCFG scfg) {
+  public void put(String methodSig, SparseCFG scfg) {
     if (!cache.containsKey(methodSig)) {
       cache.put(methodSig, scfg);
     }

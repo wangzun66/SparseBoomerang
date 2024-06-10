@@ -21,6 +21,8 @@ import boomerang.scene.Statement;
 import boomerang.scene.Val;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.stats.IBoomerangStats;
+import org.jpmml.evaluator.Evaluator;
+
 import java.util.Optional;
 
 public interface BoomerangOptions {
@@ -110,6 +112,8 @@ public interface BoomerangOptions {
   boolean handleSpecialInvokeAsNormalPropagation();
 
   boolean ignoreSparsificationAfterQuery();
+
+  Evaluator getEvaluator();
 
   IBackwardFlowFunction getBackwardFlowFunction();
 }

@@ -47,9 +47,6 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
    */
   public SparseAliasingCFG getSparseCFGForForwardPropagation(
       SootMethod m, String initialQueryVarType) {
-    // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false,
-    // SparseCFGQueryLog.QueryDirection.FWD);
-    // logList.add(queryLog);
     return null;
   }
 
@@ -71,10 +68,14 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
         Set<SparseAliasingCFG> scfgs = stmtToSCFGs.get(sootCurrentStmt.toString());
         for (SparseAliasingCFG scfg : scfgs) {
           if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
-            // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
-            // SparseCFGQueryLog.QueryDirection.BWD);
             SparseCFGQueryLog scfgLog =
-                new SparseCFGQueryLog(true, sootCurrentMethod, null, null, scfg.toString());
+                new SparseCFGQueryLog(
+                    true,
+                    sootCurrentMethod,
+                    null,
+                    null,
+                    scfg.toString(),
+                    SparsificationStrategy.ALIAS_AWARE);
             logList.add(scfgLog);
             return scfg;
           }
@@ -90,15 +91,17 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
 
   private SparseAliasingCFG createNewAASCFG(
       Val initialQueryVal, SootMethod sootCurrentMethod, Val currentVal, Stmt sootCurrentStmt) {
-    // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false,
-    // SparseCFGQueryLog.QueryDirection.BWD);
     SparseCFGQueryLog scfgLog =
-        new SparseCFGQueryLog(false, sootCurrentMethod, null, sootCurrentStmt, null);
-    // queryLog.logStart();
+        new SparseCFGQueryLog(
+            false,
+            sootCurrentMethod,
+            null,
+            sootCurrentStmt,
+            null,
+            SparsificationStrategy.ALIAS_AWARE);
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt, scfgLog);
-    // queryLog.logEnd();
     scfgLog.setScfg(scfg.toString());
     logList.add(scfgLog);
     put(sootCurrentMethod.getSignature(), sootCurrentStmt.toString(), scfg);

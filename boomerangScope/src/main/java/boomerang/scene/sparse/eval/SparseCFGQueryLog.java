@@ -1,5 +1,6 @@
 package boomerang.scene.sparse.eval;
 
+import boomerang.scene.sparse.SparseCFGCache;
 import javax.annotation.Nullable;
 import soot.SootMethod;
 import soot.Value;
@@ -12,19 +13,7 @@ import soot.jimple.Stmt;
 public class SparseCFGQueryLog {
 
   private boolean retrievedFromCache;
-
-  private QueryDirection direction;
-
-  public enum QueryDirection {
-    FWD,
-    BWD;
-  }
-
-  /*private final Stopwatch watch;
-  private final Stopwatch cfgNumberWatch;
-  private final Stopwatch findStmtsWatch;
-  private final Stopwatch sparsifysWatch;*/
-  private int containerTypeCount = 0;
+  private SparseCFGCache.SparsificationStrategy strategy;
   private int initialStmtCount = 0;
   private int finalStmtCount = 0;
 
@@ -33,33 +22,19 @@ public class SparseCFGQueryLog {
   private SootMethod method;
   private String scfg;
 
-  /*public SparseCFGQueryLog(boolean retrievedFromCache, QueryDirection direction) {
-    this.retrievedFromCache = retrievedFromCache;
-    this.direction = direction;
-    if (!retrievedFromCache) {
-      this.watch = Stopwatch.createUnstarted();
-      this.cfgNumberWatch = Stopwatch.createUnstarted();
-      this.findStmtsWatch = Stopwatch.createUnstarted();
-      this.sparsifysWatch = Stopwatch.createUnstarted();
-    } else {
-      this.watch = null;
-      this.cfgNumberWatch = null;
-      this.findStmtsWatch = null;
-      this.sparsifysWatch = null;
-    }
-  }*/
-
   public SparseCFGQueryLog(
-      boolean retrievedFromCache, SootMethod method, Value value, Stmt stmt, String scfg) {
+      boolean retrievedFromCache,
+      SootMethod method,
+      Value value,
+      Stmt stmt,
+      String scfg,
+      SparseCFGCache.SparsificationStrategy strategy) {
     this.retrievedFromCache = retrievedFromCache;
     this.method = method;
     this.stmt = stmt;
     this.value = value;
     this.scfg = scfg;
-    /*if (!retrievedFromCache) {
-      this.stmt = stmt;
-      this.value = value;
-    }*/
+    this.strategy = strategy;
   }
 
   @Nullable
@@ -84,37 +59,12 @@ public class SparseCFGQueryLog {
     this.scfg = scfg;
   }
 
-  /*public void logStart() {
-    if (!retrievedFromCache) {
-      this.watch.start();
-    }
-  }*/
-
-  /*public void logEnd() {
-    if (!retrievedFromCache) {
-      this.watch.stop();
-    }
-  }*/
-
-  /**
-   * SparseCFG built time in microseconds, 0 if it was retrieved from the cache
-   *
-   * @return
-   */
-  /*public Duration getDuration() {
-    if (!retrievedFromCache) {
-      return this.watch.elapsed();
-    } else {
-      return Duration.ZERO;
-    }
-  }*/
+  public SparseCFGCache.SparsificationStrategy getStrategy() {
+    return this.strategy;
+  }
 
   public boolean isRetrievedFromCache() {
     return retrievedFromCache;
-  }
-
-  public QueryDirection getDirection() {
-    return direction;
   }
 
   public int getInitialStmtCount() {
@@ -136,7 +86,12 @@ public class SparseCFGQueryLog {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("SCFG method: ");
+    if (this.strategy == SparseCFGCache.SparsificationStrategy.TYPE_BASED) {
+      sb.append("TAS-");
+    } else if (this.strategy == SparseCFGCache.SparsificationStrategy.ALIAS_AWARE) {
+      sb.append("AAS-");
+    }
+    sb.append("CFG for method: ");
     sb.append(method.getSubSignature());
     sb.append(" is ");
     if (retrievedFromCache) {

@@ -10,6 +10,7 @@ public class PropagationCounter {
   private static PropagationCounter NONE_INSTANCE;
   private static PropagationCounter TYPE_BASED_INSTANCE;
   private static PropagationCounter ALIAS_AWARE_INSTANCE;
+  private static PropagationCounter DYNAMIC_INSTANCE;
 
   public static PropagationCounter getInstance(SparseCFGCache.SparsificationStrategy strategy) {
     switch (strategy) {
@@ -28,6 +29,11 @@ public class PropagationCounter {
           ALIAS_AWARE_INSTANCE = new PropagationCounter(strategy);
         }
         return ALIAS_AWARE_INSTANCE;
+      case DYNAMIC:
+        if (DYNAMIC_INSTANCE == null) {
+          DYNAMIC_INSTANCE = new PropagationCounter(strategy);
+        }
+        return DYNAMIC_INSTANCE;
       default:
         throw new RuntimeException("No such strategy");
     }

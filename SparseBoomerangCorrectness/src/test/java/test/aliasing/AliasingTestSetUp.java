@@ -2,7 +2,7 @@ package test.aliasing;
 
 import static org.junit.Assert.assertTrue;
 
-import aliasing.SparseAliasManager;
+import aliasing.StrategyDeciderManager;
 import boomerang.scene.jimple.BoomerangPretransformer;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.util.AccessPath;
@@ -102,9 +102,9 @@ public class AliasingTestSetUp {
           // get base
           leftOp = ((JInstanceFieldRef) leftOp).getBase();
         }
-        SparseAliasManager sparseAliasManager =
-            SparseAliasManager.getInstance(sparsificationStrategy, ignoreAfterQuery);
-        return sparseAliasManager.getAliases(stmt, method, leftOp);
+        StrategyDeciderManager manager =
+            StrategyDeciderManager.getInstance(sparsificationStrategy, ignoreAfterQuery);
+        return manager.getAliases(stmt, method, leftOp);
       }
     }
     throw new RuntimeException(
@@ -190,12 +190,21 @@ public class AliasingTestSetUp {
             targetMethod,
             SparseCFGCache.SparsificationStrategy.ALIAS_AWARE,
             true);
+    Set<AccessPath> dynamicSparseAliases =
+            getAliases(
+                    targetClass,
+                    queryLHS,
+                    targetMethod,
+                    SparseCFGCache.SparsificationStrategy.DYNAMIC,
+                    true);
     checkResults(
         SparseCFGCache.SparsificationStrategy.TYPE_BASED, typeBasedSparseAliases, nonSparseAliases);
     checkResults(
         SparseCFGCache.SparsificationStrategy.ALIAS_AWARE,
         aliasAwareSparseAliases,
         nonSparseAliases);
+    checkResults(
+            SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
   }
 
   protected void runAnalyses(
@@ -221,12 +230,21 @@ public class AliasingTestSetUp {
             targetMethod,
             SparseCFGCache.SparsificationStrategy.ALIAS_AWARE,
             ignoreAfterQuery);
+    Set<AccessPath> dynamicSparseAliases =
+            getAliases(
+                    targetClass,
+                    queryLHS,
+                    targetMethod,
+                    SparseCFGCache.SparsificationStrategy.DYNAMIC,
+                    ignoreAfterQuery);
     checkResults(
         SparseCFGCache.SparsificationStrategy.TYPE_BASED, typeBasedSparseAliases, nonSparseAliases);
     checkResults(
         SparseCFGCache.SparsificationStrategy.ALIAS_AWARE,
         aliasAwareSparseAliases,
         nonSparseAliases);
+    checkResults(
+            SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
   }
 
   protected Set<AccessPath> getAliases(

@@ -14,6 +14,8 @@ public class QueryLog {
 
   private List<SparseCFGQueryLog> scfgLogs = new ArrayList<>();
 
+  private List<DecisionLog> decisionLogs = new ArrayList<>();
+
   private String currentMethodSig = "";
 
   private MethodLog currentMethodLog = null;
@@ -42,6 +44,10 @@ public class QueryLog {
     this.logs.add(log);
   }
 
+  public void addDecisionLog(DecisionLog log) {
+    this.decisionLogs.add(log);
+  }
+
   public BackwardQuery getQuery() {
     return this.query;
   }
@@ -54,7 +60,12 @@ public class QueryLog {
     return scfgLogs;
   }
 
-  public void storeSCFGLogList(List<SparseCFGQueryLog> list) {
-    this.scfgLogs = list;
+  public List<DecisionLog> getDecisionLogs(){
+    return this.decisionLogs;
   }
+
+  public void storeSCFGLogList(List<SparseCFGQueryLog> list) {
+    this.scfgLogs.addAll(list);
+  }
+
 }

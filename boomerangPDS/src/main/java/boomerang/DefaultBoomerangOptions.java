@@ -23,6 +23,9 @@ import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.stats.IBoomerangStats;
 import boomerang.stats.SimpleBoomerangStats;
 import com.google.common.base.Joiner;
+import org.jpmml.evaluator.Evaluator;
+
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -230,6 +233,12 @@ public class DefaultBoomerangOptions implements BoomerangOptions {
   @Override
   public boolean ignoreSparsificationAfterQuery() {
     return true;
+  }
+
+  @Override
+  @Nullable
+  public Evaluator getEvaluator(){
+    return null;
   }
 
   public void checkValid() {

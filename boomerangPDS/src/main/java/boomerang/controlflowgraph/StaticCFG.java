@@ -4,11 +4,9 @@ import boomerang.BoomerangOptions;
 import boomerang.scene.Method;
 import boomerang.scene.Statement;
 import boomerang.scene.jimple.JimpleMethod;
-import boomerang.scene.sparse.SootAdapter;
-import boomerang.scene.sparse.SparseAliasingCFG;
-import boomerang.scene.sparse.SparseCFGCache;
+import boomerang.scene.sparse.*;
 import boomerang.scene.sparse.eval.PropagationCounter;
-import boomerang.solver.BackwardBoomerangSolverCache;
+import boomerang.solver.SCFGSolverCache;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +22,7 @@ public class StaticCFG implements ObservableControlFlowGraph {
 
   private BoomerangOptions options;
 
-  private SparseAliasingCFG currentSCFG = null;
+  private SparseCFG currentSCFG = null;
   private String currMethodSig = "";
   private String initialQueryVarType;
 
@@ -53,15 +51,17 @@ public class StaticCFG implements ObservableControlFlowGraph {
       Stmt currStmt = SootAdapter.asStmt(curr);
       if (!methodSig.equals(currMethodSig)) {
         currMethodSig = methodSig;
-        SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
+        SparseCFG sparseCFG = SCFGSolverCache.getInstance().get(methodSig);
         if (sparseCFG == null) {
           sparseCFG = getSparseCFG(method, initialQueryVarType);
         }
         currentSCFG = sparseCFG;
       }
-      if (currentSCFG != null && currentSCFG.getGraph().nodes().contains(currStmt)) {
-        propagateSparse(l, method, curr, currentSCFG);
-      } else {
+      if(currentSCFG == null || currentSCFG instanceof EmptySparseCFG){
+        propagateDefault(l);
+      }else if (((SparseAliasingCFG)currentSCFG).getGraph().nodes().contains(currStmt)){
+        propagateSparse(l, method, curr, (SparseAliasingCFG)currentSCFG);
+      }else {
         propagateDefault(l);
       }
     } else {
@@ -87,9 +87,17 @@ public class StaticCFG implements ObservableControlFlowGraph {
 
   private SparseAliasingCFG getSparseCFG(Method method, String initialQueryVarType) {
     SootMethod sootMethod = ((JimpleMethod) method).getDelegate();
-    SparseCFGCache sparseCFGCache =
-        SparseCFGCache.getInstance(
-            sparsificationStrategy, options.ignoreSparsificationAfterQuery());
+    SparseCFGCache sparseCFGCache;
+    if(sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC){
+        sparseCFGCache =
+              SparseCFGCache.getInstance(
+                      SparseCFGCache.SparsificationStrategy.TYPE_BASED,
+                      options.ignoreSparsificationAfterQuery());
+    }else{
+      sparseCFGCache =
+              SparseCFGCache.getInstance(
+                      sparsificationStrategy, options.ignoreSparsificationAfterQuery());
+    }
     SparseAliasingCFG sparseCFG =
         sparseCFGCache.getSparseCFGForForwardPropagation(sootMethod, initialQueryVarType);
     return sparseCFG;

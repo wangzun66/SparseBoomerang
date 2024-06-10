@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import soot.Unit;
 import soot.Value;
 
-public class SparseAliasingCFG {
+public class SparseAliasingCFG implements SparseCFG {
 
   private static Logger log = LoggerFactory.getLogger(SparseAliasingCFG.class);
 

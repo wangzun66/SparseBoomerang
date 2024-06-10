@@ -16,6 +16,7 @@ public interface SparseCFGCache {
   enum SparsificationStrategy {
     TYPE_BASED,
     ALIAS_AWARE,
+    DYNAMIC,
     NONE;
   }
 

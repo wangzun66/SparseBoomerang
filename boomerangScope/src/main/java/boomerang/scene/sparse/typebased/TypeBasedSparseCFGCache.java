@@ -42,16 +42,13 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Map<String, SparseAliasingCFG> scfgMap = cache.get(key);
       if (scfgMap.containsKey(initialQueryType)) {
         SparseAliasingCFG scfg = scfgMap.get(initialQueryType);
-        // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
-        // SparseCFGQueryLog.QueryDirection.FWD);
-        SparseCFGQueryLog scfgLog = new SparseCFGQueryLog(true, m, null, null, scfg.toString());
+        SparseCFGQueryLog scfgLog =
+            new SparseCFGQueryLog(
+                true, m, null, null, scfg.toString(), SparsificationStrategy.TYPE_BASED);
         logList.add(scfgLog);
         return scfg;
       }
     }
-    // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false,
-    // SparseCFGQueryLog.QueryDirection.FWD);
-    // logList.add(queryLog);
     return null;
   }
 
@@ -72,10 +69,14 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       Map<String, SparseAliasingCFG> scfgMap = cache.get(methodSignature);
       if (scfgMap.containsKey(typeKey)) {
         SparseAliasingCFG scfg = scfgMap.get(typeKey);
-        // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(true,
-        // SparseCFGQueryLog.QueryDirection.BWD);
         SparseCFGQueryLog scfgLog =
-            new SparseCFGQueryLog(true, sootCurrentMethod, null, null, scfg.toString());
+            new SparseCFGQueryLog(
+                true,
+                sootCurrentMethod,
+                null,
+                null,
+                scfg.toString(),
+                SparsificationStrategy.TYPE_BASED);
         logList.add(scfgLog);
         return scfg;
       } else {
@@ -91,12 +92,14 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
       SootMethod sootCurrentMethod,
       Stmt sootCurrentStmt,
       String initialQueryVarType) {
-    // SparseCFGQueryLog queryLog = new SparseCFGQueryLog(false,
-    // SparseCFGQueryLog.QueryDirection.BWD);
-    // queryLog.logStart();
     SparseCFGQueryLog scfgLog =
         new SparseCFGQueryLog(
-            false, sootCurrentMethod, SootAdapter.asValue(initialQueryVal), null, null);
+            false,
+            sootCurrentMethod,
+            SootAdapter.asValue(initialQueryVal),
+            null,
+            null,
+            SparsificationStrategy.TYPE_BASED);
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, sootCurrentStmt, scfgLog);

@@ -29,7 +29,7 @@ public class EvalPrinter {
         str.append(",");
         str.append(queryLog.isRetrievedFromCache());
         str.append(",");
-        str.append(queryLog.getDirection());
+        str.append(queryLog.getStrategy());
         str.append(",");
         // str.append(queryLog.getDuration().toMillis());
         str.append(System.lineSeparator());
