@@ -12,11 +12,10 @@ import boomerang.scene.jimple.*;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.util.AccessPath;
 import com.google.common.base.Stopwatch;
-
 import java.io.File;
 import java.time.Duration;
 import java.util.*;
-
+import javax.annotation.Nullable;
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.LoadingModelEvaluatorBuilder;
 import org.slf4j.Logger;
@@ -24,8 +23,6 @@ import org.slf4j.LoggerFactory;
 import soot.*;
 import soot.jimple.Stmt;
 import wpds.impl.Weight;
-
-import javax.annotation.Nullable;
 
 public class StrategyDeciderManager {
 
@@ -48,7 +45,7 @@ public class StrategyDeciderManager {
   private Map<Integer, Long> id2PDSBuildingTime = new HashMap();
   private Map<Integer, Long> id2AliasSearchingTime = new HashMap();
   private Map<Integer, Long> id2QueryTime = new HashMap();
-  private static Duration evaluatorBuildingDuration= Duration.ZERO;
+  private static Duration evaluatorBuildingDuration = Duration.ZERO;
   private static Duration totalAliasingDuration;
   private Evaluator evaluator;
 
@@ -59,10 +56,12 @@ public class StrategyDeciderManager {
     private Evaluator evaluator = null;
 
     public BoomerangOptions(
-        SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery, Evaluator evaluator) {
+        SparseCFGCache.SparsificationStrategy sparsificationStrategy,
+        boolean ignoreAfterQuery,
+        Evaluator evaluator) {
       this.sparsificationStrategy = sparsificationStrategy;
       this.ignoreAfterQuery = ignoreAfterQuery;
-      if(sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC){
+      if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
         this.evaluator = evaluator;
       }
     }
@@ -112,7 +111,7 @@ public class StrategyDeciderManager {
 
     @Override
     @Nullable
-    public Evaluator getEvaluator(){
+    public Evaluator getEvaluator() {
       return this.evaluator;
     }
   }
@@ -120,9 +119,11 @@ public class StrategyDeciderManager {
   private StrategyDeciderManager(
       SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
     this.sparsificationStrategy = sparsificationStrategy;
-    if(sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC){
+    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
       Stopwatch stopwatch = Stopwatch.createStarted();
-      File pmml = new File("/Users/zunhoho/Desktop/Workspace/SparseBoomerang/resources/strategy_decider.pmml");
+      File pmml =
+          new File(
+              "/Users/zunhoho/Desktop/Workspace/SparseBoomerang/resources/strategy_decider.pmml");
       try {
         evaluator = new LoadingModelEvaluatorBuilder().load(pmml).build();
         evaluatorBuildingDuration = stopwatch.stop().elapsed();
@@ -168,7 +169,7 @@ public class StrategyDeciderManager {
     Duration elapsed = stopwatch.elapsed();
     this.id2QueryTime.put(queryCount - 1, elapsed.toNanos());
     totalAliasingDuration = totalAliasingDuration.plus(elapsed);
-    //resultsPrinter();
+    // resultsPrinter();
     return aliases;
   }
 
@@ -190,7 +191,8 @@ public class StrategyDeciderManager {
         new Boomerang(
             sootCallGraph,
             dataFlowScope,
-            new BoomerangOptions(INSTANCE.sparsificationStrategy, INSTANCE.ignoreAfterQuery, INSTANCE.evaluator));
+            new BoomerangOptions(
+                INSTANCE.sparsificationStrategy, INSTANCE.ignoreAfterQuery, INSTANCE.evaluator));
 
     // record PDS building time
     Stopwatch stopwatch = Stopwatch.createUnstarted();
@@ -206,13 +208,20 @@ public class StrategyDeciderManager {
     stopwatch.stop();
     elapsed = stopwatch.elapsed();
     this.id2AliasSearchingTime.put(queryCount - 1, elapsed.toNanos());
-    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC){
+    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
       queryLog.storeSCFGLogList(
-              SparseCFGCache.getInstance(SparseCFGCache.SparsificationStrategy.TYPE_BASED, ignoreAfterQuery).getSCFGLogs());
+          SparseCFGCache.getInstance(
+                  SparseCFGCache.SparsificationStrategy.TYPE_BASED, ignoreAfterQuery)
+              .getSCFGLogs());
       queryLog.storeSCFGLogList(
-              SparseCFGCache.getInstance(SparseCFGCache.SparsificationStrategy.ALIAS_AWARE, ignoreAfterQuery).getSCFGLogs());
-      SparseCFGCache.getInstance(SparseCFGCache.SparsificationStrategy.TYPE_BASED, ignoreAfterQuery).resetSCFGLogs();
-      SparseCFGCache.getInstance(SparseCFGCache.SparsificationStrategy.ALIAS_AWARE, ignoreAfterQuery).resetSCFGLogs();
+          SparseCFGCache.getInstance(
+                  SparseCFGCache.SparsificationStrategy.ALIAS_AWARE, ignoreAfterQuery)
+              .getSCFGLogs());
+      SparseCFGCache.getInstance(SparseCFGCache.SparsificationStrategy.TYPE_BASED, ignoreAfterQuery)
+          .resetSCFGLogs();
+      SparseCFGCache.getInstance(
+              SparseCFGCache.SparsificationStrategy.ALIAS_AWARE, ignoreAfterQuery)
+          .resetSCFGLogs();
 
     } else if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
       queryLog.storeSCFGLogList(

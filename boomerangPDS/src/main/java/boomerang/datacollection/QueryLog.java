@@ -60,12 +60,11 @@ public class QueryLog {
     return scfgLogs;
   }
 
-  public List<DecisionLog> getDecisionLogs(){
+  public List<DecisionLog> getDecisionLogs() {
     return this.decisionLogs;
   }
 
   public void storeSCFGLogList(List<SparseCFGQueryLog> list) {
     this.scfgLogs.addAll(list);
   }
-
 }

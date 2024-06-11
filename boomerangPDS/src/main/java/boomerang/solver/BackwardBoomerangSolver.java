@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.jpmml.evaluator.Evaluator;
 import org.jpmml.evaluator.EvaluatorUtil;
 import org.slf4j.Logger;
@@ -207,7 +206,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
   protected void normalFlow(Method method, Node<ControlFlowGraph.Edge, Val> currNode) {
     Edge curr = currNode.stmt();
     Val value = currNode.fact();
-    if (options.getSparsificationStrategy() == SparseCFGCache.SparsificationStrategy.DYNAMIC){
+    if (options.getSparsificationStrategy() == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
       propagateDynamic(method, currNode, curr, value);
     } else if (options.getSparsificationStrategy() != SparseCFGCache.SparsificationStrategy.NONE) {
       propagateSparse(method, currNode, curr, value);
@@ -223,7 +222,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     }
   }
 
-  private void propagateDynamic(Method method, Node<Edge, Val> currNode, Edge curr, Val value){
+  private void propagateDynamic(Method method, Node<Edge, Val> currNode, Edge curr, Val value) {
     Statement propStmt = curr.getStart();
     Stmt stmt = SootAdapter.asStmt(propStmt);
     SootMethod sootMethod = SootAdapter.asSootMethod(method);
@@ -233,32 +232,42 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
       SparseCFG sparseCFG = SCFGSolverCache.getInstance().get(methodSig);
       if (sparseCFG == null) {
         Evaluator evaluator = options.getEvaluator();
-        Map<String, Float> features = FeatureExtractor.getInstance().extract(sootMethod, SootAdapter.asValue(query.var()), stmt);
+        Map<String, Float> features =
+            FeatureExtractor.getInstance()
+                .extract(sootMethod, SootAdapter.asValue(query.var()), stmt);
         Map<String, ?> results = EvaluatorUtil.decodeAll(evaluator.evaluate(features));
         int y = Integer.valueOf(results.get("y").toString());
-        if(y == 0){
+        if (y == 0) {
           sparseCFG = new EmptySparseCFG(methodSig);
           queryLog.addDecisionLog(new DecisionLog(methodSig, 0));
-        }else if(y == 1){
-          sparseCFG = getSparseCFG(query, method, value, propStmt, SparseCFGCache.SparsificationStrategy.TYPE_BASED);
+        } else if (y == 1) {
+          sparseCFG =
+              getSparseCFG(
+                  query, method, value, propStmt, SparseCFGCache.SparsificationStrategy.TYPE_BASED);
           queryLog.addDecisionLog(new DecisionLog(methodSig, 1));
-        }else if(y == 2){
-          sparseCFG = getSparseCFG(query, method, value, propStmt, SparseCFGCache.SparsificationStrategy.ALIAS_AWARE);
+        } else if (y == 2) {
+          sparseCFG =
+              getSparseCFG(
+                  query,
+                  method,
+                  value,
+                  propStmt,
+                  SparseCFGCache.SparsificationStrategy.ALIAS_AWARE);
           queryLog.addDecisionLog(new DecisionLog(methodSig, 2));
-        }else {
+        } else {
           throw new RuntimeException("Evaluator evaluates wrong class!!");
         }
         SCFGSolverCache.getInstance().put(methodSig, sparseCFG);
       }
       currentSCFG = sparseCFG;
     }
-    if(currentSCFG instanceof SparseAliasingCFG){
-        if(((SparseAliasingCFG)currentSCFG).getGraph().nodes().contains(stmt)){
-          propagateOnSCFG((SparseAliasingCFG)currentSCFG, method, currNode, propStmt, value);
-        }else {
-          propagateOnCFG(method, currNode, propStmt, value);
-        }
-    }else{
+    if (currentSCFG instanceof SparseAliasingCFG) {
+      if (((SparseAliasingCFG) currentSCFG).getGraph().nodes().contains(stmt)) {
+        propagateOnSCFG((SparseAliasingCFG) currentSCFG, method, currNode, propStmt, value);
+      } else {
+        propagateOnCFG(method, currNode, propStmt, value);
+      }
+    } else {
       propagateOnCFG(method, currNode, propStmt, value);
     }
   }
@@ -283,8 +292,8 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
       }
       currentSCFG = sparseCFG;
     }
-    if (((SparseAliasingCFG)currentSCFG).getGraph().nodes().contains(stmt)) {
-      propagateOnSCFG((SparseAliasingCFG)currentSCFG, method, currNode, propStmt, value);
+    if (((SparseAliasingCFG) currentSCFG).getGraph().nodes().contains(stmt)) {
+      propagateOnSCFG((SparseAliasingCFG) currentSCFG, method, currNode, propStmt, value);
     } else {
       propagateOnCFG(method, currNode, propStmt, value);
     }
@@ -342,14 +351,17 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
   }
 
   private SparseAliasingCFG getSparseCFG(
-          BackwardQuery query, Method method, Val val, Statement stmt, SparseCFGCache.SparsificationStrategy strategy) {
+      BackwardQuery query,
+      Method method,
+      Val val,
+      Statement stmt,
+      SparseCFGCache.SparsificationStrategy strategy) {
     SparseAliasingCFG sparseCFG;
     SparseCFGCache sparseCFGCache =
-            SparseCFGCache.getInstance(
-                    strategy, options.ignoreSparsificationAfterQuery());
+        SparseCFGCache.getInstance(strategy, options.ignoreSparsificationAfterQuery());
     sparseCFG =
-            sparseCFGCache.getSparseCFGForBackwardPropagation(
-                    query.var(), query.asNode().stmt().getStart(), method, val, stmt);
+        sparseCFGCache.getSparseCFGForBackwardPropagation(
+            query.var(), query.asNode().stmt().getStart(), method, val, stmt);
     return sparseCFG;
   }
 

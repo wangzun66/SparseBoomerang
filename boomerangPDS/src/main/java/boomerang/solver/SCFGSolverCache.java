@@ -1,11 +1,9 @@
 package boomerang.solver;
 
-import boomerang.scene.sparse.SparseAliasingCFG;
+import boomerang.scene.sparse.SparseCFG;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-
-import boomerang.scene.sparse.SparseCFG;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -191,12 +191,12 @@ public class AliasingTestSetUp {
             SparseCFGCache.SparsificationStrategy.ALIAS_AWARE,
             true);
     Set<AccessPath> dynamicSparseAliases =
-            getAliases(
-                    targetClass,
-                    queryLHS,
-                    targetMethod,
-                    SparseCFGCache.SparsificationStrategy.DYNAMIC,
-                    true);
+        getAliases(
+            targetClass,
+            queryLHS,
+            targetMethod,
+            SparseCFGCache.SparsificationStrategy.DYNAMIC,
+            true);
     checkResults(
         SparseCFGCache.SparsificationStrategy.TYPE_BASED, typeBasedSparseAliases, nonSparseAliases);
     checkResults(
@@ -204,7 +204,7 @@ public class AliasingTestSetUp {
         aliasAwareSparseAliases,
         nonSparseAliases);
     checkResults(
-            SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
+        SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
   }
 
   protected void runAnalyses(
@@ -231,12 +231,12 @@ public class AliasingTestSetUp {
             SparseCFGCache.SparsificationStrategy.ALIAS_AWARE,
             ignoreAfterQuery);
     Set<AccessPath> dynamicSparseAliases =
-            getAliases(
-                    targetClass,
-                    queryLHS,
-                    targetMethod,
-                    SparseCFGCache.SparsificationStrategy.DYNAMIC,
-                    ignoreAfterQuery);
+        getAliases(
+            targetClass,
+            queryLHS,
+            targetMethod,
+            SparseCFGCache.SparsificationStrategy.DYNAMIC,
+            ignoreAfterQuery);
     checkResults(
         SparseCFGCache.SparsificationStrategy.TYPE_BASED, typeBasedSparseAliases, nonSparseAliases);
     checkResults(
@@ -244,7 +244,7 @@ public class AliasingTestSetUp {
         aliasAwareSparseAliases,
         nonSparseAliases);
     checkResults(
-            SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
+        SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
   }
 
   protected Set<AccessPath> getAliases(

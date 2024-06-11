@@ -23,13 +23,12 @@ import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.stats.IBoomerangStats;
 import boomerang.stats.SimpleBoomerangStats;
 import com.google.common.base.Joiner;
-import org.jpmml.evaluator.Evaluator;
-
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
+import org.jpmml.evaluator.Evaluator;
 
 public class DefaultBoomerangOptions implements BoomerangOptions {
 
@@ -237,7 +236,7 @@ public class DefaultBoomerangOptions implements BoomerangOptions {
 
   @Override
   @Nullable
-  public Evaluator getEvaluator(){
+  public Evaluator getEvaluator() {
     return null;
   }
 

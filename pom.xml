@@ -204,11 +204,7 @@
                 <artifactId>boomerangScope</artifactId>
                 <version>${project.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.jpmml</groupId>
-                <artifactId>pmml-evaluator-metro</artifactId>
-                <version>1.6.4</version>
-            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

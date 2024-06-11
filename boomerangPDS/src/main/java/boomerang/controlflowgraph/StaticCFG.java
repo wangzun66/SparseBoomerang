@@ -57,11 +57,11 @@ public class StaticCFG implements ObservableControlFlowGraph {
         }
         currentSCFG = sparseCFG;
       }
-      if(currentSCFG == null || currentSCFG instanceof EmptySparseCFG){
+      if (currentSCFG == null || currentSCFG instanceof EmptySparseCFG) {
         propagateDefault(l);
-      }else if (((SparseAliasingCFG)currentSCFG).getGraph().nodes().contains(currStmt)){
-        propagateSparse(l, method, curr, (SparseAliasingCFG)currentSCFG);
-      }else {
+      } else if (((SparseAliasingCFG) currentSCFG).getGraph().nodes().contains(currStmt)) {
+        propagateSparse(l, method, curr, (SparseAliasingCFG) currentSCFG);
+      } else {
         propagateDefault(l);
       }
     } else {
@@ -88,15 +88,15 @@ public class StaticCFG implements ObservableControlFlowGraph {
   private SparseAliasingCFG getSparseCFG(Method method, String initialQueryVarType) {
     SootMethod sootMethod = ((JimpleMethod) method).getDelegate();
     SparseCFGCache sparseCFGCache;
-    if(sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC){
-        sparseCFGCache =
-              SparseCFGCache.getInstance(
-                      SparseCFGCache.SparsificationStrategy.TYPE_BASED,
-                      options.ignoreSparsificationAfterQuery());
-    }else{
+    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
       sparseCFGCache =
-              SparseCFGCache.getInstance(
-                      sparsificationStrategy, options.ignoreSparsificationAfterQuery());
+          SparseCFGCache.getInstance(
+              SparseCFGCache.SparsificationStrategy.TYPE_BASED,
+              options.ignoreSparsificationAfterQuery());
+    } else {
+      sparseCFGCache =
+          SparseCFGCache.getInstance(
+              sparsificationStrategy, options.ignoreSparsificationAfterQuery());
     }
     SparseAliasingCFG sparseCFG =
         sparseCFGCache.getSparseCFGForForwardPropagation(sootMethod, initialQueryVarType);
