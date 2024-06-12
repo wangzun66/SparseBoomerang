@@ -76,6 +76,7 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
                     null,
                     scfg.toString(),
                     SparsificationStrategy.ALIAS_AWARE);
+            LOGGER.info(scfgLog.toString());
             logList.add(scfgLog);
             return scfg;
           }
@@ -103,6 +104,7 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt, scfgLog);
     scfgLog.setScfg(scfg.toString());
+    LOGGER.info(scfgLog.toString());
     logList.add(scfgLog);
     put(sootCurrentMethod.getSignature(), sootCurrentStmt.toString(), scfg);
     return scfg;

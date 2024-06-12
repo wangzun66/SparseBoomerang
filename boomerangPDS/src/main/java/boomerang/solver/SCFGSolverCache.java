@@ -1,5 +1,6 @@
 package boomerang.solver;
 
+import boomerang.scene.sparse.EmptySparseCFG;
 import boomerang.scene.sparse.SparseCFG;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +34,12 @@ public class SCFGSolverCache {
   @Nullable
   public SparseCFG get(String methodSig) {
     if (cache.containsKey(methodSig)) {
+      SparseCFG scfg = cache.get(methodSig);
+      if(scfg instanceof EmptySparseCFG){
+        LOGGER.info("Retrieve EmptySparseCFG from SCFGSolverCache for method: {}", methodSig);
+      }else {
+        LOGGER.info("Retrieve Sparse CFG from SCFGSolverCache for method: {}", methodSig);
+      }
       return cache.get(methodSig);
     }
     return null;

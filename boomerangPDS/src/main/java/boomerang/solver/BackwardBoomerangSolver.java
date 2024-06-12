@@ -177,10 +177,12 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (!sootMethod.getSignature().equals(queryLog.getCurrentMethodSig())) {
       MethodLog methodLog = queryLog.getCurrentMethodLog();
       methodLog.logEnd();
+      LOGGER.info(methodLog.toString());
       queryLog.setCurrentMethodSig(sootMethod.getSignature());
       MethodLog ml = new MethodLog(sootMethod);
       queryLog.setCurrentMethodLog(ml);
-      queryLog.addLog(ml);
+      queryLog.addMethodLog(ml);
+      LOGGER.info(ml.toString());
       ml.logStart();
     }
     if (edge.getStart().containsInvokeExpr()
@@ -231,20 +233,23 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
       this.currMethodSig = methodSig;
       SparseCFG sparseCFG = SCFGSolverCache.getInstance().get(methodSig);
       if (sparseCFG == null) {
-        Evaluator evaluator = options.getEvaluator();
+        DecisionLog dl = new DecisionLog(methodSig, 0);
+        queryLog.addDecisionLog(dl);
         Map<String, Float> features =
             FeatureExtractor.getInstance()
                 .extract(sootMethod, SootAdapter.asValue(query.var()), stmt);
+        dl.logStart();
+        Evaluator evaluator = options.getEvaluator();
         Map<String, ?> results = EvaluatorUtil.decodeAll(evaluator.evaluate(features));
         int y = Integer.valueOf(results.get("y").toString());
+        dl.logEnd();
         if (y == 0) {
           sparseCFG = new EmptySparseCFG(methodSig);
-          queryLog.addDecisionLog(new DecisionLog(methodSig, 0));
         } else if (y == 1) {
           sparseCFG =
               getSparseCFG(
                   query, method, value, propStmt, SparseCFGCache.SparsificationStrategy.TYPE_BASED);
-          queryLog.addDecisionLog(new DecisionLog(methodSig, 1));
+          dl.setDecision(1);
         } else if (y == 2) {
           sparseCFG =
               getSparseCFG(
@@ -253,10 +258,11 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
                   value,
                   propStmt,
                   SparseCFGCache.SparsificationStrategy.ALIAS_AWARE);
-          queryLog.addDecisionLog(new DecisionLog(methodSig, 2));
+          dl.setDecision(2);
         } else {
           throw new RuntimeException("Evaluator evaluates wrong class!!");
         }
+        LOGGER.info(dl.toString());
         SCFGSolverCache.getInstance().put(methodSig, sparseCFG);
       }
       currentSCFG = sparseCFG;

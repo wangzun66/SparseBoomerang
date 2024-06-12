@@ -92,7 +92,7 @@ public class SparseCFGQueryLog {
       sb.append("AAS-");
     }
     sb.append("CFG for method: ");
-    sb.append(method.getSubSignature());
+    sb.append(method.getSignature());
     sb.append(" is ");
     if (retrievedFromCache) {
       sb.append("retrieved ");

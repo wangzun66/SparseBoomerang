@@ -23,6 +23,10 @@ public class DecisionLog {
     this.watch.stop();
   }
 
+  public void setDecision(int decision){
+    this.decision = decision;
+  }
+
   public Duration getDuration() {
     return this.watch.elapsed();
   }
@@ -38,7 +42,10 @@ public class DecisionLog {
   @Override
   public String toString() {
     StringBuilder stringBuilder = new StringBuilder();
-    stringBuilder.append(methodSig + ", " + getDuration().toNanos());
+    stringBuilder.append("Decision for ");
+    stringBuilder.append(methodSig);
+    stringBuilder.append(" is " + decision + ". ");
+    stringBuilder.append("Decision making time is " + getDuration().toNanos());
     return stringBuilder.toString();
   }
 }

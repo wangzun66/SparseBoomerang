@@ -411,9 +411,11 @@ public abstract class ForwardBoomerangSolver<W extends Weight> extends AbstractB
       queryLog.setCurrentMethodSig(sootMethod.getSignature());
       MethodLog methodLog = queryLog.getCurrentMethodLog();
       methodLog.logEnd();
+      LOGGER.info(methodLog.toString());
       MethodLog ml = new MethodLog(sootMethod);
       queryLog.setCurrentMethodLog(ml);
-      queryLog.addLog(ml);
+      queryLog.addMethodLog(ml);
+      LOGGER.info(ml.toString());
       ml.logStart();
     }
 

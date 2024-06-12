@@ -209,11 +209,11 @@ public class StrategyDeciderManager {
     elapsed = stopwatch.elapsed();
     this.id2AliasSearchingTime.put(queryCount - 1, elapsed.toNanos());
     if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
-      queryLog.storeSCFGLogList(
+      queryLog.storeSCFGLogs(
           SparseCFGCache.getInstance(
                   SparseCFGCache.SparsificationStrategy.TYPE_BASED, ignoreAfterQuery)
               .getSCFGLogs());
-      queryLog.storeSCFGLogList(
+      queryLog.storeSCFGLogs(
           SparseCFGCache.getInstance(
                   SparseCFGCache.SparsificationStrategy.ALIAS_AWARE, ignoreAfterQuery)
               .getSCFGLogs());
@@ -224,7 +224,7 @@ public class StrategyDeciderManager {
           .resetSCFGLogs();
 
     } else if (sparsificationStrategy != SparseCFGCache.SparsificationStrategy.NONE) {
-      queryLog.storeSCFGLogList(
+      queryLog.storeSCFGLogs(
           SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).getSCFGLogs());
       SparseCFGCache.getInstance(sparsificationStrategy, ignoreAfterQuery).resetSCFGLogs();
     }
@@ -248,7 +248,7 @@ public class StrategyDeciderManager {
           this.id2PDSBuildingTime.get(i),
           this.id2AliasSearchingTime.get(i));
       QueryLog queryLog = dataCollection.getQueryLog(i);
-      for (MethodLog methodLog : queryLog.getLogList()) {
+      for (MethodLog methodLog : queryLog.getMethodLogs()) {
         LOGGER.info(methodLog.toString());
       }
     }
