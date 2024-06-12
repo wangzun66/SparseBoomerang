@@ -45,7 +45,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
         SparseCFGQueryLog scfgLog =
             new SparseCFGQueryLog(
                 true, m, null, null, scfg.toString(), SparsificationStrategy.TYPE_BASED);
-        LOGGER.info(scfgLog.toString());
+        //LOGGER.info(scfgLog.toString());
         logList.add(scfgLog);
         return scfg;
       }
@@ -78,7 +78,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
                 null,
                 scfg.toString(),
                 SparsificationStrategy.TYPE_BASED);
-        LOGGER.info(scfgLog.toString());
+        //LOGGER.info(scfgLog.toString());
         logList.add(scfgLog);
         return scfg;
       } else {
@@ -107,7 +107,7 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
             initialQueryVal, sootCurrentMethod, sootCurrentStmt, scfgLog);
     // queryLog.logEnd();
     scfgLog.setScfg(scfg.toString());
-    LOGGER.info(scfgLog.toString());
+    //LOGGER.info(scfgLog.toString());
     logList.add(scfgLog);
     put(sootCurrentMethod.getSignature(), initialQueryVarType, scfg);
     return scfg;
