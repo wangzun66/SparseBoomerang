@@ -35,9 +35,9 @@ public class SCFGSolverCache {
   public SparseCFG get(String methodSig) {
     if (cache.containsKey(methodSig)) {
       SparseCFG scfg = cache.get(methodSig);
-      if(scfg instanceof EmptySparseCFG){
+      if (scfg instanceof EmptySparseCFG) {
         LOGGER.info("Retrieve EmptySparseCFG from SCFGSolverCache for method: {}", methodSig);
-      }else {
+      } else {
         LOGGER.info("Retrieve Sparse CFG from SCFGSolverCache for method: {}", methodSig);
       }
       return cache.get(methodSig);

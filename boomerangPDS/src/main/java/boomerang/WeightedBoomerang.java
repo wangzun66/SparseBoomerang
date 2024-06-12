@@ -990,7 +990,8 @@ public abstract class WeightedBoomerang<W extends Weight> {
     try {
       queryGraph.addRoot(query);
       LOGGER.trace("Starting backward analysis of: {}", query);
-      LOGGER.info("\n\nStarting {} analysis for {}", options.getSparsificationStrategy(), query.getInfo());
+      LOGGER.info(
+          "\n\nStarting {} analysis for {}", options.getSparsificationStrategy(), query.getInfo());
       SootMethod sm = SootAdapter.asSootMethod(query.cfgEdge().getMethod());
       QueryLog queryLog = DataCollection.getInstance().getQueryLog(query.getId());
       queryLog.setCurrentMethodSig(sm.getSignature());

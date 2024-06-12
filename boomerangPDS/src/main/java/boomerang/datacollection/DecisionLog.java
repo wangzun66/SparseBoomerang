@@ -23,7 +23,7 @@ public class DecisionLog {
     this.watch.stop();
   }
 
-  public void setDecision(int decision){
+  public void setDecision(int decision) {
     this.decision = decision;
   }
 
