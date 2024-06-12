@@ -177,12 +177,12 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     if (!sootMethod.getSignature().equals(queryLog.getCurrentMethodSig())) {
       MethodLog methodLog = queryLog.getCurrentMethodLog();
       methodLog.logEnd();
-      //LOGGER.info(methodLog.toString());
+      // LOGGER.info(methodLog.toString());
       queryLog.setCurrentMethodSig(sootMethod.getSignature());
       MethodLog ml = new MethodLog(sootMethod);
       queryLog.setCurrentMethodLog(ml);
       queryLog.addMethodLog(ml);
-      //LOGGER.info(ml.toString());
+      // LOGGER.info(ml.toString());
       ml.logStart();
     }
     if (edge.getStart().containsInvokeExpr()
@@ -262,7 +262,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
         } else {
           throw new RuntimeException("Evaluator evaluates wrong class!!");
         }
-        //LOGGER.info(dl.toString());
+        // LOGGER.info(dl.toString());
         SCFGSolverCache.getInstance().put(methodSig, sparseCFG);
       }
       currentSCFG = sparseCFG;

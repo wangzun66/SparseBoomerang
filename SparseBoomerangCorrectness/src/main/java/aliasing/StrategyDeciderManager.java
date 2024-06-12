@@ -123,7 +123,7 @@ public class StrategyDeciderManager {
       Stopwatch stopwatch = Stopwatch.createStarted();
       File pmml =
           new File(
-              "/Users/zunhoho/Desktop/Workspace/SparseBoomerang/resources/strategy_decider.pmml");
+              "/Users/zunhoho/Desktop/Workspace/SparseBoomerang/pmml/strategy_decider.pmml");
       try {
         evaluator = new LoadingModelEvaluatorBuilder().load(pmml).build();
         evaluatorBuildingDuration = stopwatch.stop().elapsed();

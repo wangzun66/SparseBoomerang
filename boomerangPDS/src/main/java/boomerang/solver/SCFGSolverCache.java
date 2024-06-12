@@ -1,6 +1,5 @@
 package boomerang.solver;
 
-import boomerang.scene.sparse.EmptySparseCFG;
 import boomerang.scene.sparse.SparseCFG;
 import java.util.HashMap;
 import java.util.Map;
