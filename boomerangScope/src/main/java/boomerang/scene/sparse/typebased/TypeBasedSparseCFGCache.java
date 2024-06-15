@@ -102,10 +102,11 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
             null,
             null,
             SparsificationStrategy.TYPE_BASED);
+    scfgLog.logStart();
     SparseAliasingCFG scfg =
         sparseCFGBuilder.buildSparseCFG(
             initialQueryVal, sootCurrentMethod, sootCurrentStmt, scfgLog);
-    // queryLog.logEnd();
+    scfgLog.logEnd();
     scfgLog.setScfg(scfg.toString());
     // LOGGER.info(scfgLog.toString());
     logList.add(scfgLog);

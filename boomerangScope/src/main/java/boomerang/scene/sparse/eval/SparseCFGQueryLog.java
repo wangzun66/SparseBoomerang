@@ -1,6 +1,8 @@
 package boomerang.scene.sparse.eval;
 
 import boomerang.scene.sparse.SparseCFGCache;
+import com.google.common.base.Stopwatch;
+import java.time.Duration;
 import javax.annotation.Nullable;
 import soot.SootMethod;
 import soot.Value;
@@ -21,6 +23,8 @@ public class SparseCFGQueryLog {
   private Value value = null;
   private SootMethod method;
   private String scfg;
+  private Stopwatch watch;
+  private Duration duration = Duration.ZERO;
 
   public SparseCFGQueryLog(
       boolean retrievedFromCache,
@@ -35,6 +39,7 @@ public class SparseCFGQueryLog {
     this.value = value;
     this.scfg = scfg;
     this.strategy = strategy;
+    this.watch = Stopwatch.createUnstarted();
   }
 
   @Nullable
@@ -81,6 +86,23 @@ public class SparseCFGQueryLog {
 
   public void setFinalStmtCount(int finalStmtCount) {
     this.finalStmtCount = finalStmtCount;
+  }
+
+  public void logStart() {
+    if (!retrievedFromCache) {
+      this.watch.start();
+    }
+  }
+
+  public void logEnd() {
+    if (!retrievedFromCache) {
+      this.watch.stop();
+      duration = watch.elapsed();
+    }
+  }
+
+  public Duration getDuration() {
+    return this.duration;
   }
 
   @Override
