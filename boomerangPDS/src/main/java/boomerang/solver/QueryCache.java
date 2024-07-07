@@ -7,22 +7,22 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BackwardBoomerangSolverCache {
+public class QueryCache {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(BackwardBoomerangSolverCache.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(QueryCache.class);
 
   Map<String, SparseAliasingCFG> cache;
 
-  private static BackwardBoomerangSolverCache INSTANCE;
+  private static QueryCache INSTANCE;
 
-  public static BackwardBoomerangSolverCache getInstance() {
+  public static QueryCache getInstance() {
     if (INSTANCE == null) {
-      INSTANCE = new BackwardBoomerangSolverCache();
+      INSTANCE = new QueryCache();
     }
     return INSTANCE;
   }
 
-  private BackwardBoomerangSolverCache() {
+  private QueryCache() {
     cache = new HashMap<>();
   }
 

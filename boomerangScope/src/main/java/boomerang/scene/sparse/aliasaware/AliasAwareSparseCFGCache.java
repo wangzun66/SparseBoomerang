@@ -20,7 +20,7 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
 
   List<SparseCFGQueryLog> logList = new ArrayList<>();
 
-  Map<String, Map<String, Set<SparseAliasingCFG>>> cache;
+  Map<String, Set<SparseAliasingCFG>> cache;
   AliasAwareSparseCFGBuilder sparseCFGBuilder;
 
   private static AliasAwareSparseCFGCache INSTANCE;
@@ -65,21 +65,18 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
     String methodSig = sootCurrentMethod.getSignature();
 
     if (cache.containsKey(methodSig)) {
-      Map<String, Set<SparseAliasingCFG>> stmtToSCFGs = cache.get(methodSig);
-      if (stmtToSCFGs.containsKey(sootCurrentStmt.toString())) {
-        Set<SparseAliasingCFG> scfgs = stmtToSCFGs.get(sootCurrentStmt.toString());
-        for (SparseAliasingCFG scfg : scfgs) {
-          if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
+      Set<SparseAliasingCFG> scfgs = cache.get(methodSig);
+      for (SparseAliasingCFG scfg : scfgs) {
+        if (scfg.getFallBackAliases().contains(sootCurrentValue)) {
+          if (scfg.getGraph().nodes().contains(sootCurrentStmt)) {
             SparseCFGQueryLog queryLog =
                 new SparseCFGQueryLog(true, SparseCFGQueryLog.QueryDirection.BWD);
             logList.add(queryLog);
             return scfg;
           }
         }
-        return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
-      } else {
-        return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
       }
+      return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
     } else {
       return createNewAASCFG(initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt);
     }
@@ -94,26 +91,15 @@ public class AliasAwareSparseCFGCache implements SparseCFGCache {
             initialQueryVal, sootCurrentMethod, currentVal, sootCurrentStmt, queryLog);
     queryLog.logEnd();
     logList.add(queryLog);
-    put(sootCurrentMethod.getSignature(), sootCurrentStmt.toString(), scfg);
+    put(sootCurrentMethod.getSignature(), scfg);
     return scfg;
   }
 
-  private void put(String methodSignature, String stmtKey, SparseAliasingCFG scfg) {
-    Map<String, Set<SparseAliasingCFG>> scfgsMap;
-    if (cache.containsKey(methodSignature)) {
-      scfgsMap = cache.get(methodSignature);
-    } else {
-      scfgsMap = new HashMap<>();
-      cache.put(methodSignature, scfgsMap);
+  private void put(String methodSignature, SparseAliasingCFG scfg) {
+    if (!cache.containsKey(methodSignature)) {
+      cache.put(methodSignature, new HashSet<>());
     }
-    Set<SparseAliasingCFG> scfgs;
-    if (scfgsMap.containsKey(stmtKey)) {
-      scfgs = scfgsMap.get(stmtKey);
-    } else {
-      scfgs = new HashSet<>();
-      scfgsMap.put(stmtKey, scfgs);
-    }
-    scfgs.add(scfg);
+    cache.get(methodSignature).add(scfg);
   }
 
   @Override

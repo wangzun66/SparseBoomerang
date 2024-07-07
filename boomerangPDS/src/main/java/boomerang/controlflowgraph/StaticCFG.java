@@ -8,7 +8,7 @@ import boomerang.scene.sparse.SootAdapter;
 import boomerang.scene.sparse.SparseAliasingCFG;
 import boomerang.scene.sparse.SparseCFGCache;
 import boomerang.scene.sparse.eval.PropagationCounter;
-import boomerang.solver.BackwardBoomerangSolverCache;
+import boomerang.solver.QueryCache;
 import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,9 +53,12 @@ public class StaticCFG implements ObservableControlFlowGraph {
       Stmt currStmt = SootAdapter.asStmt(curr);
       if (!methodSig.equals(currMethodSig)) {
         currMethodSig = methodSig;
-        SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
+        SparseAliasingCFG sparseCFG = QueryCache.getInstance().get(methodSig);
         if (sparseCFG == null) {
           sparseCFG = getSparseCFG(method, initialQueryVarType);
+          if (sparseCFG != null) {
+            QueryCache.getInstance().put(methodSig, sparseCFG);
+          }
         }
         currentSCFG = sparseCFG;
       }

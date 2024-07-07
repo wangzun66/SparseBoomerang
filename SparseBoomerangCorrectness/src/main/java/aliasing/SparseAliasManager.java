@@ -166,15 +166,11 @@ public class SparseAliasManager {
    * @return
    */
   public synchronized Set<AccessPath> getAliases(Stmt stmt, SootMethod method, Value value) {
-    // log.info(method.getActiveBody().toString());
-    // log.info("getAliases call for: " + stmt + " in " + method);
     if (disableAliasing) {
       return Collections.emptySet();
     }
     Stopwatch stopwatch = Stopwatch.createStarted();
     BackwardQuery query = createQuery(stmt, method, value);
-    // MainQueryInfo.getInstance()
-    // .setInfo(query.cfgEdge().getMethod(), query.cfgEdge().getStart(), query.var());
     Set<AccessPath> aliases = getAliases(query);
     Duration elapsed = stopwatch.elapsed();
     totalAliasingDuration = totalAliasingDuration.plus(elapsed);

@@ -454,7 +454,7 @@ public abstract class WeightedBoomerang<W extends Weight> {
             icfg(),
             cfg(),
             sourceQuery,
-            mainQuery,
+            mainQuery.var(),
             genField,
             options,
             createCallSummaries(sourceQuery, forwardCallSummaries),

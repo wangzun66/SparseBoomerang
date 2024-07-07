@@ -84,7 +84,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     this.query = query;
     this.flowFunction = backwardFlowFunction;
     this.flowFunction.setSolver(this, fieldLoadStatements, fieldStoreStatements);
-    BackwardBoomerangSolverCache.getInstance().reset();
+    QueryCache.getInstance().reset();
   }
 
   private boolean notUsedInMethod(Method m, Statement curr, Val value) {
@@ -214,10 +214,10 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
      */
     if (!methodSig.equals(currMethodSig)) {
       this.currMethodSig = methodSig;
-      SparseAliasingCFG sparseCFG = BackwardBoomerangSolverCache.getInstance().get(methodSig);
+      SparseAliasingCFG sparseCFG = QueryCache.getInstance().get(methodSig);
       if (sparseCFG == null) {
         sparseCFG = getSparseCFG(query, method, value, propStmt);
-        BackwardBoomerangSolverCache.getInstance().put(methodSig, sparseCFG);
+        QueryCache.getInstance().put(methodSig, sparseCFG);
       }
       currentSCFG = sparseCFG;
     }
