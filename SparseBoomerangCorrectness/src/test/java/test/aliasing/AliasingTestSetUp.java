@@ -195,7 +195,7 @@ public class AliasingTestSetUp {
             targetClass,
             queryLHS,
             targetMethod,
-            SparseCFGCache.SparsificationStrategy.DYNAMIC,
+            SparseCFGCache.SparsificationStrategy.ADAPTIVE,
             true);
     checkResults(
         SparseCFGCache.SparsificationStrategy.TYPE_BASED, typeBasedSparseAliases, nonSparseAliases);
@@ -204,7 +204,7 @@ public class AliasingTestSetUp {
         aliasAwareSparseAliases,
         nonSparseAliases);
     checkResults(
-        SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
+        SparseCFGCache.SparsificationStrategy.ADAPTIVE, dynamicSparseAliases, nonSparseAliases);
   }
 
   protected void runAnalyses(
@@ -235,7 +235,7 @@ public class AliasingTestSetUp {
             targetClass,
             queryLHS,
             targetMethod,
-            SparseCFGCache.SparsificationStrategy.DYNAMIC,
+            SparseCFGCache.SparsificationStrategy.ADAPTIVE,
             ignoreAfterQuery);
     checkResults(
         SparseCFGCache.SparsificationStrategy.TYPE_BASED, typeBasedSparseAliases, nonSparseAliases);
@@ -244,7 +244,7 @@ public class AliasingTestSetUp {
         aliasAwareSparseAliases,
         nonSparseAliases);
     checkResults(
-        SparseCFGCache.SparsificationStrategy.DYNAMIC, dynamicSparseAliases, nonSparseAliases);
+        SparseCFGCache.SparsificationStrategy.ADAPTIVE, dynamicSparseAliases, nonSparseAliases);
   }
 
   protected Set<AccessPath> getAliases(

@@ -61,7 +61,7 @@ public class StrategyDeciderManager {
         Evaluator evaluator) {
       this.sparsificationStrategy = sparsificationStrategy;
       this.ignoreAfterQuery = ignoreAfterQuery;
-      if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
+      if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.ADAPTIVE) {
         this.evaluator = evaluator;
       }
     }
@@ -119,10 +119,11 @@ public class StrategyDeciderManager {
   private StrategyDeciderManager(
       SparseCFGCache.SparsificationStrategy sparsificationStrategy, boolean ignoreAfterQuery) {
     this.sparsificationStrategy = sparsificationStrategy;
-    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
+    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.ADAPTIVE) {
       Stopwatch stopwatch = Stopwatch.createStarted();
       File pmml =
-          new File("/Users/zunhoho/Desktop/Workspace/SparseBoomerang/pmml/strategy_decider.pmml");
+          new File(
+              "/Users/zunhoho/Desktop/Workspace/SparseBoomerang/pmml/random_forest_model.pmml");
       try {
         evaluator = new LoadingModelEvaluatorBuilder().load(pmml).build();
         evaluatorBuildingDuration = stopwatch.stop().elapsed();
@@ -207,7 +208,7 @@ public class StrategyDeciderManager {
     stopwatch.stop();
     elapsed = stopwatch.elapsed();
     this.id2AliasSearchingTime.put(queryCount - 1, elapsed.toNanos());
-    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
+    if (sparsificationStrategy == SparseCFGCache.SparsificationStrategy.ADAPTIVE) {
       queryLog.storeSCFGLogs(
           SparseCFGCache.getInstance(
                   SparseCFGCache.SparsificationStrategy.TYPE_BASED, ignoreAfterQuery)

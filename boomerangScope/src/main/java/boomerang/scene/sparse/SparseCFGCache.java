@@ -16,7 +16,7 @@ public interface SparseCFGCache {
   enum SparsificationStrategy {
     TYPE_BASED,
     ALIAS_AWARE,
-    DYNAMIC,
+    ADAPTIVE,
     NONE;
   }
 
@@ -55,5 +55,5 @@ public interface SparseCFGCache {
 
   void resetSCFGLogs();
 
-  Map<String, Map<String, Set<SparseAliasingCFG>>> getCache();
+  Map<String, Set<SparseAliasingCFG>> getCache();
 }
