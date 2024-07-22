@@ -7,22 +7,22 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SCFGSolverCache {
+public class QueryCache {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SCFGSolverCache.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(QueryCache.class);
 
   Map<String, SparseCFG> cache;
 
-  private static SCFGSolverCache INSTANCE;
+  private static QueryCache INSTANCE;
 
-  public static SCFGSolverCache getInstance() {
+  public static QueryCache getInstance() {
     if (INSTANCE == null) {
-      INSTANCE = new SCFGSolverCache();
+      INSTANCE = new QueryCache();
     }
     return INSTANCE;
   }
 
-  private SCFGSolverCache() {
+  private QueryCache() {
     cache = new HashMap<>();
   }
 

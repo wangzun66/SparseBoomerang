@@ -136,15 +136,13 @@ public class TypeBasedSparseCFGCache implements SparseCFGCache {
   }
 
   @Override
-  public Map<String, Map<String, Set<SparseAliasingCFG>>> getCache() {
-    Map<String, Map<String, Set<SparseAliasingCFG>>> result = new HashMap<>();
+  public Map<String, Set<SparseAliasingCFG>> getCache() {
+    Map<String, Set<SparseAliasingCFG>> result = new HashMap<>();
     for (String ms : cache.keySet()) {
-      result.put(ms, new HashMap<>());
-      Map<String, Set<SparseAliasingCFG>> type2Scfgs = result.get(ms);
+      result.put(ms, new HashSet<>());
+      Set<SparseAliasingCFG> scfgs = result.get(ms);
       for (String type : cache.get(ms).keySet()) {
-        Set<SparseAliasingCFG> scfg = new HashSet<>();
-        scfg.add(cache.get(ms).get(type));
-        type2Scfgs.put(type, scfg);
+        scfgs.add(cache.get(ms).get(type));
       }
     }
     return result;
