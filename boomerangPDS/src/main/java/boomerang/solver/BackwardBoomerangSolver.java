@@ -35,6 +35,7 @@ import boomerang.scene.Type;
 import boomerang.scene.Val;
 import boomerang.scene.sparse.*;
 import boomerang.scene.sparse.eval.PropagationCounter;
+import boomerang.strategydecider.DecisionCache;
 import boomerang.strategydecider.FeatureExtractor;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -44,8 +45,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.jpmml.evaluator.Evaluator;
-import org.jpmml.evaluator.EvaluatorUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import soot.SootMethod;
@@ -91,7 +90,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     this.query = query;
     this.flowFunction = backwardFlowFunction;
     this.flowFunction.setSolver(this, fieldLoadStatements, fieldStoreStatements);
-    SCFGSolverCache.getInstance().reset();
+    QueryCache.getInstance().reset();
     queryLog = DataCollection.getInstance().getQueryLog(query.getId());
   }
 
@@ -208,8 +207,8 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
   protected void normalFlow(Method method, Node<ControlFlowGraph.Edge, Val> currNode) {
     Edge curr = currNode.stmt();
     Val value = currNode.fact();
-    if (options.getSparsificationStrategy() == SparseCFGCache.SparsificationStrategy.DYNAMIC) {
-      propagateDynamic(method, currNode, curr, value);
+    if (options.getSparsificationStrategy() == SparseCFGCache.SparsificationStrategy.ADAPTIVE) {
+      propagateAdaptive(method, currNode, curr, value);
     } else if (options.getSparsificationStrategy() != SparseCFGCache.SparsificationStrategy.NONE) {
       propagateSparse(method, currNode, curr, value);
     } else {
@@ -224,14 +223,14 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
     }
   }
 
-  private void propagateDynamic(Method method, Node<Edge, Val> currNode, Edge curr, Val value) {
+  private void propagateAdaptive(Method method, Node<Edge, Val> currNode, Edge curr, Val value) {
     Statement propStmt = curr.getStart();
     Stmt stmt = SootAdapter.asStmt(propStmt);
     SootMethod sootMethod = SootAdapter.asSootMethod(method);
     String methodSig = sootMethod.getSignature();
     if (!methodSig.equals(currMethodSig)) {
       this.currMethodSig = methodSig;
-      SparseCFG sparseCFG = SCFGSolverCache.getInstance().get(methodSig);
+      SparseCFG sparseCFG = QueryCache.getInstance().get(methodSig);
       if (sparseCFG == null) {
         DecisionLog dl = new DecisionLog(methodSig, 0);
         queryLog.addDecisionLog(dl);
@@ -239,9 +238,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
             FeatureExtractor.getInstance()
                 .extract(sootMethod, SootAdapter.asValue(query.var()), stmt);
         dl.logStart();
-        Evaluator evaluator = options.getEvaluator();
-        Map<String, ?> results = EvaluatorUtil.decodeAll(evaluator.evaluate(features));
-        int y = Integer.valueOf(results.get("y").toString());
+        int y = DecisionCache.getInstance(options.getEvaluator()).getDecision(features);
         dl.logEnd();
         if (y == 0) {
           sparseCFG = new EmptySparseCFG(methodSig);
@@ -263,7 +260,7 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
           throw new RuntimeException("Evaluator evaluates wrong class!!");
         }
         // LOGGER.info(dl.toString());
-        SCFGSolverCache.getInstance().put(methodSig, sparseCFG);
+        QueryCache.getInstance().put(methodSig, sparseCFG);
       }
       currentSCFG = sparseCFG;
     }
@@ -291,10 +288,10 @@ public abstract class BackwardBoomerangSolver<W extends Weight> extends Abstract
      */
     if (!methodSig.equals(currMethodSig)) {
       this.currMethodSig = methodSig;
-      SparseCFG sparseCFG = SCFGSolverCache.getInstance().get(methodSig);
+      SparseCFG sparseCFG = QueryCache.getInstance().get(methodSig);
       if (sparseCFG == null) {
         sparseCFG = getSparseCFG(query, method, value, propStmt);
-        SCFGSolverCache.getInstance().put(methodSig, sparseCFG);
+        QueryCache.getInstance().put(methodSig, sparseCFG);
       }
       currentSCFG = sparseCFG;
     }
